@@ -1,7 +1,11 @@
 function validateSignUp(event) {
   event.preventDefault();
   let fields = event.target.elements;
+<<<<<<< HEAD
   const minLenPass = 4;
+=======
+  let msg = "";
+>>>>>>> master
 
   if (fields.Password.value.length <= minLenPass) {
     const _msg = `Passwords is to short need to be at least ${minLenPass}`;
