@@ -1,3 +1,16 @@
+function validateLogin(event) {
+  event.preventDefault();
+  let fields = event.target.elements;
+  const minLenPass = 4;
+
+  if (fields.Password.value.length <= minLenPass) {
+    const _msg = `Passwords is to short need to be at least ${minLenPass}`;
+    console.warn(_msg);
+    document.getElementById("LV-Login-Form-Message").innerText = `${_msg} \n`;
+    return;
+  }
+}
+
 function validateSignUp(event) {
   event.preventDefault();
   let fields = event.target.elements;
@@ -6,14 +19,14 @@ function validateSignUp(event) {
   if (fields.Password.value.length <= minLenPass) {
     const _msg = `Passwords is to short need to be at least ${minLenPass}`;
     console.warn(_msg);
-    document.getElementById("LV-Form-Message").innerText = `${_msg} \n`;
+    document.getElementById("LV-SignUp-Form-Message").innerText = `${_msg} \n`;
     return;
   }
 
   if (fields.Password.value !== fields.Password2.value) {
     const _msg = "Passwords do not match";
     console.warn(_msg);
-    document.getElementById("LV-Form-Message").innerText = _`${_msg} \n`;
+    document.getElementById("LV-SignUp-Form-Message").innerText = _`${_msg} \n`;
     return;
   }
 }

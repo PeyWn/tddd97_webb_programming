@@ -11,7 +11,7 @@
 		  
 			<div class="LV Column">
 			  <div class="LV Login">
-				<form>
+				<form name="LoginForm" action="#" onsubmit="return validateLogin(event)">
 				  <p>User name:</p>
 				  <input
 					type="email"
@@ -21,11 +21,16 @@
 				  <p>Password:</p>
 				  <input type="password" name="Password" />
 				  <button class="Btn1" type="submit"><p>Login</p></button>
+				  <p id="LV-Login-Form-Message"></p>
 				</form>
 			  </div>
 		  
 			  <div class="LV Signup">
-				<form id="SignUpForm" action="#" onsubmit="return validateSignUp(event)">
+				<form
+				  name="SignUpForm"
+				  action="#"
+				  onsubmit="return validateSignUp(event)"
+				>
 				  <p>Email:</p>
 				  <input
 					type="email"
@@ -47,12 +52,11 @@
 				  <p>Country:</p>
 				  <input type="text" name="Country" />
 				  <button class="Btn1" type="submit"><p>Submit</p></button>
-				  <p id='LV-Form-Message'></p>
+				  <p id="LV-SignUp-Form-Message"></p>
 				</form>
 			  </div>
 			</div>
-		  </div>
-						
+		  </div>					  
 	</script>
 	</head>
   <body>
