@@ -13,23 +13,31 @@
 			  <div class="LV Login">
 				<form>
 				  <p>User name:</p>
-				  <input type="text" name="UserName" /><br />
+				  <input
+					type="email"
+					placeholder="your.email@adress.net"
+					name="UserName"
+				  /><br />
 				  <p>Password:</p>
-				  <input type="text" name="Password" />
+				  <input type="password" name="Password" />
 				  <button class="Btn1" type="submit"><p>Login</p></button>
 				</form>
 			  </div>
 		  
 			  <div class="LV Signup">
-				<form>
+				<form id="SignUpForm" action="#" onsubmit="return validateSignUp(event)">
 				  <p>Email:</p>
-				  <input type="text" name="Email" /><br />
+				  <input
+					type="email"
+					placeholder="your.email@adress.net"
+					name="Email"
+				  /><br />
 				  <p>Password:</p>
-				  <input type="text" name="Password" />
+				  <input type="password" name="Password" />
 				  <p>Repeat Password:</p>
-				  <input type="text" name="Password2" />
+				  <input type="password" name="Password2" />
 				  <p>Given name</p>
-				  <input type="text" name="FName" />
+				  <input type="text" name="Name" />
 				  <p>Surname:</p>
 				  <input type="text" name="Surname" />
 				  <p>Gender:</p>
@@ -39,11 +47,14 @@
 				  <p>Country:</p>
 				  <input type="text" name="Country" />
 				  <button class="Btn1" type="submit"><p>Submit</p></button>
+				  <p id='LV-Form-Message'></p>
 				</form>
 			  </div>
 			</div>
-		  </div></script>
-  </head>
+		  </div>
+						
+	</script>
+	</head>
   <body>
 	  <div id="main-view" class="MainView"/>
   </body>
