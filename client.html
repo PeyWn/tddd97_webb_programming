@@ -11,15 +11,21 @@
 		  
 			<div class="LV Column">
 			  <div class="LV Login">
-				<form name="LoginForm" action="#" onsubmit="return validateLogin(event)">
+				<form
+				  name="LoginForm"
+				  required="true"
+				  action="#"
+				  onsubmit="return validateLogin(event)"
+				>
 				  <p>User name:</p>
 				  <input
 					type="email"
 					placeholder="your.email@adress.net"
-					name="UserName"
+					name="username"
+					required="true"
 				  /><br />
 				  <p>Password:</p>
-				  <input type="password" name="Password" />
+				  <input type="password" name="password" required="true" />
 				  <button class="Btn1" type="submit"><p>Login</p></button>
 				  <p id="LV-Login-Form-Message"></p>
 				</form>
@@ -28,6 +34,7 @@
 			  <div class="LV Signup">
 				<form
 				  name="SignUpForm"
+				  required="true"
 				  action="#"
 				  onsubmit="return validateSignUp(event)"
 				>
@@ -35,28 +42,30 @@
 				  <input
 					type="email"
 					placeholder="your.email@adress.net"
-					name="Email"
+					name="email"
+					required="true"
 				  /><br />
 				  <p>Password:</p>
-				  <input type="password" name="Password" />
+				  <input type="password" name="password" required="true" />
 				  <p>Repeat Password:</p>
-				  <input type="password" name="Password2" />
+				  <input type="password" name="password2" required="true" />
 				  <p>Given name</p>
-				  <input type="text" name="Name" />
+				  <input type="text" name="firstname" required="true" />
 				  <p>Surname:</p>
-				  <input type="text" name="Surname" />
+				  <input type="text" name="familyname" required="true" />
 				  <p>Gender:</p>
-				  <input type="text" name="Gender" />
+				  <input type="text" name="gender" required="true" />
 				  <p>City:</p>
-				  <input type="text" name="City" />
+				  <input type="text" name="city" required="true" />
 				  <p>Country:</p>
-				  <input type="text" name="Country" />
+				  <input type="text" name="country" required="true" />
 				  <button class="Btn1" type="submit"><p>Submit</p></button>
 				  <p id="LV-SignUp-Form-Message"></p>
 				</form>
 			  </div>
 			</div>
-		  </div>					  
+		  </div>
+					  
 	</script>
 	</head>
   <body>
