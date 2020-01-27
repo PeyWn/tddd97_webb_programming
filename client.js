@@ -143,7 +143,6 @@ function validateSignUp(event) {
 function changeView(viewName) {
   if (viewName in views) {
     const currentView = getSessionItem("CURRENT_VIEW");
-    console.log(`change view from ${currentView} to  ${viewName}`);
     let elem = false;
     if (currentView === false) {
       elem = getElement(views["login"].body);
