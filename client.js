@@ -12,9 +12,10 @@ function renderPage() {
       const headElem = getElement(views[view].head);
       if (bodyElem === false || headElem === false) return;
       bodyElem.innerHTML = headElem.innerHTML;
+      bodyElem.style.display === "none";
     }
   }
-}
+  }
 
 function getElement(id) {
   if (document === null || typeof document === "undefined") {
@@ -123,16 +124,15 @@ function validateSignUp(event) {
 function changeView(viewName) {
   if (viewName in views) {
     const currentView = getSessionItem("CURRENT_VIEW");
+    console.log(`change view from ${currentView} to  ${viewName}`);
+    let elem = false;
     if (currentView === false) {
-      let elem = getElement(views["login"].body);
-      if (elem === false) return;
-      elem.style.display = "none";
-      return;
+      elem = getElement(views["login"].body);
+    } else {
+      elem = getElement(views[currentView].body);
     }
-    let elem = getElement(currentView);
     if (elem === false) return;
     elem.style.display = "none";
-
     window.sessionStorage.setItem("CURRENT_VIEW", viewName);
     displayView();
   } else console.error("Can't change view, not found wrong input");
@@ -156,9 +156,10 @@ displayView = function() {
     const loginHeadElem = getElement(views["login"].head);
     if (loginBodyElem === false || loginHeadElem === false) return;
     loginBodyElem.innerHTML = loginHeadElem.innerHTML;
+    loginBodyElem.style.display = "block";
     return;
   }
-  let elem = getElement(currentView);
+  let elem = getElement(views[currentView].body);
   if (elem === false) return;
   elem.style.display = "block";
 };
