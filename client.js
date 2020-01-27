@@ -1,3 +1,56 @@
+const views = {
+  login: { head: "load-login-view", body: "login-view" },
+  profile: { head: "load-profile-view", body: "profile-view" },
+  browse: { head: "load-browse-view", body: "browse-view" },
+  account: { head: "load-account-view", body: "account-view" }
+};
+
+function renderPage() {
+  for (view in views) {
+    if (view !== "login") {
+      let bodyElem = getElement(views[view].body);
+      const headElem = getElement(views[view].head);
+      if (bodyElem === false || headElem === false) return;
+      bodyElem.innerHTML = headElem.innerHTML;
+    }
+  }
+}
+
+function getElement(id) {
+  if (document === null || typeof document === "undefined") {
+    console.error("Not a valid session");
+    return false;
+  }
+  const elem = document.getElementById(id);
+
+  if (elem === null || typeof elem === "undefined") {
+    console.warn(`Element ${id} not found`);
+    return false;
+  }
+
+  return elem;
+}
+
+function getSessionItem(id) {
+  if (window === null || typeof window === "undefined") {
+    console.error("Not a valid session");
+    return false;
+  }
+
+  const item = window.sessionStorage.getItem(id);
+  if (item === null || typeof item === "undefined") {
+    return false;
+  }
+
+  return item;
+}
+
+function hasValidToken() {
+  const token = getSessionItem("token");
+  if (token === false) return false;
+  return true;
+}
+
 function validateLogin(event) {
   event.preventDefault();
   let fields = event.target.elements;
@@ -6,34 +59,35 @@ function validateLogin(event) {
   if (fields.password.value.length <= minLenPass) {
     const _msg = `Passwords is to short need to be at least ${minLenPass}`;
     console.warn(_msg);
-    document.getElementById("LV-Login-Form-Message").innerText = `${_msg} \n`;
+    let elem = getElement("LV-Login-Form-Message");
+    if (elem === false) return;
+    elem.innerText = `${_msg} \n`;
     return;
   }
   const token = serverstub.signIn(fields.username.value, fields.password.value);
   if (token.success === true && "data" in token) {
     window.sessionStorage.setItem("token", token.data);
     const _msg = `Successfully logged in`;
-    document.getElementById("LV-Login-Form-Message").innerText = `${_msg} \n`;
+    let elem = getElement("LV-Login-Form-Message");
+    if (elem === false) return;
+    elem.innerText = `${_msg} \n`;
     renderPage();
     changeView("profile");
   } else {
     const _msg = `Failed to log in`;
     console.warn(_msg);
-    document.getElementById("LV-Login-Form-Message").innerText = `${_msg} \n`;
+    let elem = getElement("LV-Login-Form-Message");
+    if (elem === false) return;
+    elem.innerText = `${_msg} \n`;
   }
-}
-
-function hasValidToken() {
-  const token = window.sessionStorage.getItem("token");
-  if (token === null || typeof token === "undefined") return;
-  return true;
 }
 
 function validateSignUp(event) {
   event.preventDefault();
   let fields = event.target.elements;
   const minLenPass = 1;
-  let errorElem = document.getElementById("LV-SignUp-Form-Message");
+  let errorElem = getElement("LV-SignUp-Form-Message");
+  if (errorElem === false) return;
 
   if (fields.password.value.length < minLenPass) {
     const _msg = `Passwords is to short need to be at least ${minLenPass}`;
@@ -61,23 +115,6 @@ function validateSignUp(event) {
   errorElem.innerText = serverstub.signUp(postMsg).message;
 }
 
-const views = {
-  login: { head: "load-login-view", body: "login-view" },
-  profile: { head: "load-profile-view", body: "profile-view" },
-  browse: { head: "load-browse-view", body: "browse-view" },
-  account: { head: "load-account-view", body: "account-view" }
-};
-
-function renderPage() {
-  for (view in views) {
-    if (view !== "login") {
-      this.document.getElementById(
-        views[view].body
-      ).innerHTML = this.document.getElementById(views[view].head).innerHTML;
-    }
-  }
-}
-
 /**
  * Abstraction for change view
  * If there is a valid view input, change view
@@ -85,12 +122,16 @@ function renderPage() {
  */
 function changeView(viewName) {
   if (viewName in views) {
-    const currentView = window.sessionStorage.getItem("CURRENT_VIEW");
-    if (currentView === null || typeof currentView === "undefined") {
-      this.document.getElementById(views["login"].body).style.display = "none";
+    const currentView = getSessionItem("CURRENT_VIEW");
+    if (currentView === false) {
+      let elem = getElement(views["login"].body);
+      if (elem === false) return;
+      elem.style.display = "none";
       return;
     }
-    this.document.getElementById(currentView).style.display = "none";
+    let elem = getElement(currentView);
+    if (elem === false) return;
+    elem.style.display = "none";
 
     window.sessionStorage.setItem("CURRENT_VIEW", viewName);
     displayView();
@@ -105,26 +146,24 @@ function changeView(viewName) {
 displayView = function() {
   if (window === null || typeof window === "undefined") return;
 
-  const currentView = window.sessionStorage.getItem("CURRENT_VIEW");
+  const currentView = getSessionItem("CURRENT_VIEW");
   /**
    * If there is no value stored for the 'CURRENT_VIEW', change to welcome welcome view
    * otherwise change to that the view stored
    */
-  if (currentView === null || typeof currentView === "undefined") {
-    this.document.getElementById(
-      "login-view"
-    ).innerHTML = this.document.getElementById("load-login-view").innerHTML;
+  if (currentView === false) {
+    let loginBodyElem = getElement(views["login"].body);
+    const loginHeadElem = getElement(views["login"].head);
+    if (loginBodyElem === false || loginHeadElem === false) return;
+    loginBodyElem.innerHTML = loginHeadElem.innerHTML;
     return;
   }
-  this.document.getElementById(currentView).style.display = "block";
+  let elem = getElement(currentView);
+  if (elem === false) return;
+  elem.style.display = "block";
 };
 
 window.onload = function() {
   this.displayView();
   if (this.hasValidToken()) this.renderPage();
-
-  //   let view = this.document.getElementById("load-welcome-view").innerHTML;
-  //   let mainView = this.document.getElementById("main-view");
-  //   mainView.innerHTML = view;
-  //   this.document.getElementById("SignUpForm").onsubmit() = this.validateSignUp;
 };
