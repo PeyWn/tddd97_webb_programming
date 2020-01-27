@@ -8,6 +8,15 @@ const layouts = {
   layoutNavBar: { head: "load-layout-navbar", body: "layout-navbar" }
 };
 
+function toggleActive(elem) {
+  if (elem.classList.contains("Active")) return;
+  let actives = document.getElementsByClassName("Active");
+  for (i = 0; i < actives.length; i++) {
+    actives[i].classList.remove("Active");
+  }
+  elem.classList.add("Active");
+}
+
 function renderPage() {
   for (view in views) {
     if (view !== "login") {

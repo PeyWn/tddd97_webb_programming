@@ -1,6 +1,7 @@
 $LV-color: oldlace;
 $Colors: (
   Primary: oldlace,
+  Active: salmon,
   Hover: lightsalmon
 );
 %textbox {
@@ -25,6 +26,10 @@ body {
   p {
     margin: 0px;
   }
+}
+
+.Active {
+  color: map-get($map: $Colors, $key: "Active");
 }
 
 .Layout {
