@@ -1,49 +1,112 @@
-.LV.Logo, .LV.Login, .LV.Signup {
-  padding: 1rem; }
+.Layout > .NavBar, .LV.Logo, .LV.Login, .LV.Signup {
+  padding: 1rem;
+}
 
 .Image {
-  width: 100%; }
+  width: 100%;
+}
 
 .Column {
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
-  flex-direction: column; }
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+}
 
 .Btn1 {
-  margin: .2rem 0 .2rem 0; }
+  margin: 0.2rem 0 0.2rem 0;
+}
+
+body {
+  margin: 0;
+}
 
 body p {
-  margin: 0px; }
+  margin: 0px;
+}
 
-.LoginView {
+.Layout {
+  display: none;
+}
+
+.Layout > .NavBar {
+  background-color: oldlace;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  width: 100vw;
+}
+
+.Layout > .NavBar h2 {
+  margin: 0;
+  padding: 0.4rem 0.2rem 0.4rem 0.2rem;
+}
+
+.Layout > .NavBar h2:hover {
+  cursor: pointer;
+  color: lightsalmon;
+}
+
+.View {
+  display: none;
+  padding: 0.5rem;
+}
+
+.View > .Login {
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
   width: 600px;
   margin-right: auto;
   margin-left: auto;
-  margin-top: 100px;
-  flex-direction: row; }
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: row;
+          flex-direction: row;
+}
 
 .LV {
-  box-sizing: border-box; }
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+}
 
 .LV.Logo {
   background-color: oldlace;
-  flex-grow: calc(1/2);
-  flex-basis: 340px;
-  margin-right: 10px; }
+  -webkit-box-flex: calc(1 / 2);
+      -ms-flex-positive: calc(1 / 2);
+          flex-grow: calc(1 / 2);
+  -ms-flex-preferred-size: 340px;
+      flex-basis: 340px;
+  margin-right: 10px;
+}
 
 .LV.Column {
   height: 100%;
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
-  flex-grow: calc(1/2);
-  flex-basis: 250px; }
+  -webkit-box-flex: calc(1 / 2);
+      -ms-flex-positive: calc(1 / 2);
+          flex-grow: calc(1 / 2);
+  -ms-flex-preferred-size: 250px;
+      flex-basis: 250px;
+}
 
 .LV.Login {
   background-color: oldlace;
-  flex: calc(1/3);
-  margin-bottom: 10px; }
+  -webkit-box-flex: calc(1 / 3);
+      -ms-flex: calc(1 / 3);
+          flex: calc(1 / 3);
+  margin-bottom: 10px;
+}
 
 .LV.Signup {
   background-color: oldlace;
-  flex: calc(2/3); }
-
+  -webkit-box-flex: calc(2 / 3);
+      -ms-flex: calc(2 / 3);
+          flex: calc(2 / 3);
+}
 /*# sourceMappingURL=client.css.map */

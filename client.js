@@ -4,6 +4,9 @@ const views = {
   browse: { head: "load-browse-view", body: "browse-view" },
   account: { head: "load-account-view", body: "account-view" }
 };
+const layouts = {
+  layoutNavBar: { head: "load-layout-navbar", body: "layout-navbar" }
+};
 
 function renderPage() {
   for (view in views) {
@@ -15,7 +18,14 @@ function renderPage() {
       bodyElem.style.display === "none";
     }
   }
+  for (layout in layouts) {
+    let layoutBody = getElement(layouts[layout].body);
+    const layoutHead = getElement(layouts[layout].head);
+    if (layoutBody === false || layoutHead === false) return;
+    layoutBody.innerHTML = layoutHead.innerHTML;
+    layoutBody.style.display = "block";
   }
+}
 
 function getElement(id) {
   if (document === null || typeof document === "undefined") {
