@@ -2,7 +2,7 @@ function validateLogin(event) {
   event.preventDefault();
   let fields = event.target.elements;
   const minLenPass = 4;
-  console.log(fields);
+
   if (fields.password.value.length <= minLenPass) {
     const _msg = `Passwords is to short need to be at least ${minLenPass}`;
     console.warn(_msg);
@@ -14,12 +14,19 @@ function validateLogin(event) {
     window.sessionStorage.setItem("token", token.data);
     const _msg = `Successfully logged in`;
     document.getElementById("LV-Login-Form-Message").innerText = `${_msg} \n`;
+    renderPage();
     changeView("profile");
   } else {
     const _msg = `Failed to log in`;
     console.warn(_msg);
     document.getElementById("LV-Login-Form-Message").innerText = `${_msg} \n`;
   }
+}
+
+function hasValidToken() {
+  const token = window.sessionStorage.getItem("token");
+  if (token === null || typeof token === "undefined") return;
+  return true;
 }
 
 function validateSignUp(event) {
@@ -54,21 +61,41 @@ function validateSignUp(event) {
   errorElem.innerText = serverstub.signUp(postMsg).message;
 }
 
+const views = {
+  login: { head: "load-login-view", body: "login-view" },
+  profile: { head: "load-profile-view", body: "profile-view" },
+  browse: { head: "load-browse-view", body: "browse-view" },
+  account: { head: "load-account-view", body: "account-view" }
+};
+
+function renderPage() {
+  for (view in views) {
+    if (view !== "login") {
+      this.document.getElementById(
+        views[view].body
+      ).innerHTML = this.document.getElementById(views[view].head).innerHTML;
+    }
+  }
+}
+
 /**
  * Abstraction for change view
  * If there is a valid view input, change view
  * otherwise do nothing
  */
-changeView = function(view) {
-  const views = {
-    welcome: "load-welcome-view",
-    profile: "load-profile-view"
-  };
-  if (view in views) {
-    window.sessionStorage.setItem("CURRENT_VIEW", views[view]);
+function changeView(viewName) {
+  if (viewName in views) {
+    const currentView = window.sessionStorage.getItem("CURRENT_VIEW");
+    if (currentView === null || typeof currentView === "undefined") {
+      this.document.getElementById(views["login"].body).style.display = "none";
+      return;
+    }
+    this.document.getElementById(currentView).style.display = "none";
+
+    window.sessionStorage.setItem("CURRENT_VIEW", viewName);
     displayView();
   } else console.error("Can't change view, not found wrong input");
-};
+}
 
 /**
  * displays a view
@@ -76,7 +103,6 @@ changeView = function(view) {
  * is accessed from session storage with the 'CURRENT_VIEW' key
  */
 displayView = function() {
-  let mainView = this.document.getElementById("main-view");
   if (window === null || typeof window === "undefined") return;
 
   const currentView = window.sessionStorage.getItem("CURRENT_VIEW");
@@ -85,15 +111,18 @@ displayView = function() {
    * otherwise change to that the view stored
    */
   if (currentView === null || typeof currentView === "undefined") {
-    mainView.innerHTML = this.document.getElementById(
-      "load-welcome-view"
-    ).innerHTML;
+    this.document.getElementById(
+      "login-view"
+    ).innerHTML = this.document.getElementById("load-login-view").innerHTML;
     return;
   }
-  mainView.innerHTML = this.document.getElementById(currentView).innerHTML;
+  this.document.getElementById(currentView).style.display = "block";
 };
+
 window.onload = function() {
-  displayView();
+  this.displayView();
+  if (this.hasValidToken()) this.renderPage();
+
   //   let view = this.document.getElementById("load-welcome-view").innerHTML;
   //   let mainView = this.document.getElementById("main-view");
   //   mainView.innerHTML = view;
