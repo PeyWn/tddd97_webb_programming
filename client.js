@@ -1,8 +1,20 @@
 const views = {
-  login: { head: "load-login-view", body: "login-view" },
-  profile: { head: "load-profile-view", body: "profile-view" },
-  browse: { head: "load-browse-view", body: "browse-view" },
-  account: { head: "load-account-view", body: "account-view" }
+  login: { head: "load-login-view", body: "login-view", navLink: "" },
+  profile: {
+    head: "load-profile-view",
+    body: "profile-view",
+    navLink: "nav-profile"
+  },
+  browse: {
+    head: "load-browse-view",
+    body: "browse-view",
+    navLink: "nav-browse"
+  },
+  account: {
+    head: "load-account-view",
+    body: "account-view",
+    navLink: "nav-account"
+  }
 };
 const layouts = {
   layoutNavBar: { head: "load-layout-navbar", body: "layout-navbar" }
@@ -180,9 +192,13 @@ displayView = function() {
   let elem = getElement(views[currentView].body);
   if (elem === false) return;
   elem.style.display = "block";
+  const linkElem = getElement(views[currentView].navLink);
+  if (linkElem !== false) toggleActive(linkElem);
 };
 
 window.onload = function() {
+  if (this.hasValidToken()) {
+    this.renderPage();
+  }
   this.displayView();
-  if (this.hasValidToken()) this.renderPage();
 };
