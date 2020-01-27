@@ -82,10 +82,30 @@
 	</script>
 
 	<script id="load-account-view" type=”text/view”>
-		<h1> user account view </h1>
+    <form
+	  name="ChangePassForm"
+	  required="true"
+	  onsubmit="changePassword(event); this.reset(); return false;"
+    >
+
+    <p>Old password:</p>
+    <input type="password" name="oldPassword" required="true">
+    <p>New password:</p>
+    <input type="password" name="newPassword" required="true">
+    <p>Repeat password:</p>
+    <input type="password" name="newPassword2" required="true">
+    
+    <button class="Btn1" type="submit"><p>Submit</p></button>
+    <p id="AV-change-Form-Message"></p>
+    
+	  </form>
+
+    <div class="AV logOutbtn">
+    <button class="Btn1" onclick="return signOut(event);"><p>Log out</p></button>
+    </div>
 	</script>
 	</head>
-  <body>
+  <body>    
 	  <div id='layout-navbar' class='Layout'>
 	  </div>
 	  <div id="login-view" class="View" ></div>
