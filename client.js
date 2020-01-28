@@ -51,8 +51,15 @@ function renderPage() {
     let bodyElem = getElement(views[view].body);
     const headElem = getElement(views[view].head);
     if (bodyElem === false || headElem === false) return;
+
     bodyElem.innerHTML = headElem.innerHTML;
     bodyElem.style.display === "none";
+
+    switch (view) {
+      case "profile":
+        loadProfileInfo();
+        break;
+    }
   }
   for (layout in layouts) {
     let layoutBody = getElement(layouts[layout].body);
@@ -70,8 +77,6 @@ function getElement(id) {
   }
   const elem = document.getElementById(id);
 
-  console.log(id);
-
   if (elem === null || typeof elem === "undefined") {
     console.warn(`Element ${id} not found`);
     return false;
@@ -87,7 +92,7 @@ function getSessionItem(id) {
   }
 
   const item = window.sessionStorage.getItem(id);
-  if (item === null || typeof item === "undefined") {
+  if (item === null || typeof item === "undefined" || item === "") {
     return false;
   }
 
@@ -230,6 +235,54 @@ function signOut(event) {
   window.sessionStorage.setItem("token", "");
 }
 
+/* ======= Home-view js lib  ======= */
+
+function loadProfileInfo() {
+  let infoElem = getElement("pv-info");
+  if (infoElem === false) return;
+  const token = window.sessionStorage.getItem("token");
+  if (token === null || typeof token === "undefined") return;
+  const { success, data } = serverstub.getUserDataByToken(token);
+  if (success) {
+    infoElem.innerHTML = `
+    <h3>Email: ${data.email}</h3>
+    <h3>Firstname: ${data.firstname}</h3>
+    <h3>Familyname: ${data.familyname}</h3>
+    <h3>Gender: ${data.gender}</h3>
+    <h3>City: ${data.city}</h3>
+    <h3>Country: ${data.country}</h3>
+    `;
+  }
+}
+
+function postToFeed(event) {
+  event.preventDefault();
+
+  const msgId = "PV-Submit-msg";
+
+  let fields = event.target.elements;
+  if (fields.feedInput === "" || typeof fields.feedInput === "undefined")
+    return;
+
+  const token = getSessionItem("token");
+  if (!token) {
+    const _msg = "Token not found when posting on wall";
+    writeToElement(_msg, msgId);
+    return;
+  }
+
+  const email = serverstub.getUserDataByToken(token);
+  if ((email === "") | (typeof email === "undefined")) {
+    const _msg = "User not found when posting on wall";
+    writeToElement(_msg, msgId);
+    return;
+  }
+
+  serverstub.postMessage(token, fields.feedInput, email);
+}
+
+/* ======= Home-view the end ======= */
+
 /**
  * Abstraction for change view
  * If there is a valid view input, change view
@@ -264,7 +317,7 @@ displayView = function() {
    * If there is no value stored for the 'CURRENT_VIEW', change to welcome welcome view
    * otherwise change to that the view stored
    */
-  if (currentView === false) {
+  if (currentView === false || currentView === "" || currentView === "login") {
     let loginBodyElem = getElement(views["login"].body);
     const loginHeadElem = getElement(views["login"].head);
     if (loginBodyElem === false || loginHeadElem === false) return;

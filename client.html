@@ -74,7 +74,26 @@
 		</div>
 	</script>
 	<script id="load-profile-view" type=”text/view”>
-		<h1> user profile view </h1>
+		<div class="Profile">
+			<div class="Wall">
+				<div class="Post">
+					<form
+					name="FeedForm"
+					required="true"
+					onsubmit="postToFeed(event); this.reset(); return false;">
+  
+						<p>Enter post:</p>
+						<textarea name="feedInput" required="true"></textarea>
+  
+						<button class="BtnPost" type="submit"><p>Submit</p></button>
+					  <p id="PV-Submit-msg"></p>
+						
+					</form>
+				</div>
+			  </div>
+		  <div id='pv-info' class='Info'></div>
+		</div>
+  
 	</script>
 
 	<script id="load-browse-view" type=”text/view”>
@@ -106,12 +125,11 @@
 	</script>
 	</head>
   <body>    
-	  <div id='layout-navbar' class='Layout'>
-	  </div>
+	  <div id='layout-navbar' class='Layout'></div>
 	  <div id="login-view" class="View" ></div>
 	  <div id="profile-view" class="View" ></div>
-	  <div id="browse-view" class="View" ></div>
-	  <div id="account-view" class="View" ></div>
+-     <div id="browse-view" class="View" ></div>
+-     <div id="account-view" class="View" ></div>
   </body>
 
 </html>

@@ -23,6 +23,9 @@ $Colors: (
 
 body {
   margin: 0;
+  div {
+    box-sizing: border-box;
+  }
   p {
     margin: 0px;
   }
@@ -95,5 +98,31 @@ body {
 
     background-color: $LV-color;
     flex: calc(2 / 3);
+  }
+}
+
+.Profile {
+  width: 100%;
+  justify-content: center;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  .Info {
+    @extend %textbox;
+    flex: 0 1 calc(2 / 6);
+  }
+  .Wall {
+    @extend %textbox;
+    flex: calc(3 / 5) 1 0;
+    textarea {
+      width: 100%;
+      height: 100px;
+      margin-top: 0.5rem;
+      padding: 0.2rem 0.5rem 0.2rem 0.5rem;
+    }
+    button {
+      margin-top: 0.5rem;
+      display: block;
+    }
   }
 }
