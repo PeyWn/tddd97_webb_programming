@@ -46,6 +46,38 @@ function flushPage() {
   }
 }
 
+function renderProfileByEmail(event) {
+  event.preventDefault();
+
+  let fields = event.target.elements;
+
+  const msgId = "BV-load-profile-form-message";
+
+  writeToElement("", msgId);
+
+  if (fields.email === "" || typeof fields.email === "undefined") {
+    const _msg = "Cant submit an empty field";
+    writeToElement(_msg, msgId);
+    return;
+  }
+
+  const messages = getUserMessages(fields.email.value);
+
+  if (messages === false || typeof messages === "undefined") {
+    const _msg = "Could not find a user by that address";
+    writeToElement(_msg, msgId);
+    return;
+  }
+
+  loadProfileByEmail(fields.email.value);
+  insertWallMessagesTo("bv-wall", messages);
+}
+
+function renderUserMessages() {
+  const data = getCurrentUserMessages();
+  if (data) insertWallMessagesTo("pv-wall", data);
+}
+
 function renderPage() {
   for (view in views) {
     let bodyElem = getElement(views[view].body);
@@ -58,6 +90,7 @@ function renderPage() {
     switch (view) {
       case "profile":
         loadProfileInfo();
+        renderUserMessages();
         break;
     }
   }
@@ -235,6 +268,24 @@ function signOut(event) {
   window.sessionStorage.setItem("token", "");
 }
 
+function loadProfileByEmail(email) {
+  let infoElem = getElement("bv-info");
+  if (infoElem === false) return;
+  const token = window.sessionStorage.getItem("token");
+  if (token === null || typeof token === "undefined") return;
+  const { success, data } = serverstub.getUserDataByEmail(token, email);
+  if (success) {
+    infoElem.innerHTML = `
+    <h3>Email: ${data.email}</h3>
+    <h3>Firstname: ${data.firstname}</h3>
+    <h3>Familyname: ${data.familyname}</h3>
+    <h3>Gender: ${data.gender}</h3>
+    <h3>City: ${data.city}</h3>
+    <h3>Country: ${data.country}</h3>
+    `;
+  }
+}
+
 /* ======= Home-view js lib  ======= */
 
 function loadProfileInfo() {
@@ -255,13 +306,47 @@ function loadProfileInfo() {
   }
 }
 
+function getUserMessages(email) {
+  const token = getSessionItem("token");
+  if (token === false) return false;
+  const { success, data } = serverstub.getUserMessagesByEmail(token, email);
+  if (!success) return false;
+  return data;
+}
+
+function getCurrentUserMessages() {
+  const token = getSessionItem("token");
+  if (token === false) return false;
+  const { success, data } = serverstub.getUserMessagesByToken(token);
+  if (!success) return false;
+  return data;
+}
+
+function insertWallMessagesTo(id, messages) {
+  let infoElem = getElement(id);
+  if (infoElem === false) return;
+  infoElem.innerHTML = null;
+  messages.forEach(msg => {
+    infoElem.innerHTML += `
+      <div class='Msg'>
+        <p>${msg.content}</p>
+        <h3>${msg.writer}</h3>
+      </div>
+      `;
+  });
+}
+
 function postToFeed(event) {
   event.preventDefault();
 
   const msgId = "PV-Submit-msg";
 
   let fields = event.target.elements;
-  if (fields.feedInput === "" || typeof fields.feedInput === "undefined")
+  if (
+    fields.feedInput === "" ||
+    typeof fields.feedInput === "undefined" ||
+    !("value" in fields.feedInput)
+  )
     return;
 
   const token = getSessionItem("token");
@@ -271,14 +356,19 @@ function postToFeed(event) {
     return;
   }
 
-  const email = serverstub.getUserDataByToken(token);
+  const {
+    data: { email }
+  } = serverstub.getUserDataByToken(token);
+
   if ((email === "") | (typeof email === "undefined")) {
     const _msg = "User not found when posting on wall";
     writeToElement(_msg, msgId);
     return;
   }
 
-  serverstub.postMessage(token, fields.feedInput, email);
+  const obj = serverstub.postMessage(token, fields.feedInput.value, email);
+  console.log(obj);
+  renderUserMessages();
 }
 
 /* ======= Home-view the end ======= */

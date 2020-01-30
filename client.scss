@@ -101,7 +101,8 @@ body {
   }
 }
 
-.Profile {
+.Profile,
+.Browse {
   width: 100%;
   justify-content: center;
   display: flex;
@@ -111,7 +112,7 @@ body {
     @extend %textbox;
     flex: 0 1 calc(2 / 6);
   }
-  .Wall {
+  .Column {
     @extend %textbox;
     flex: calc(3 / 5) 1 0;
     textarea {
@@ -124,5 +125,19 @@ body {
       margin-top: 0.5rem;
       display: block;
     }
+  }
+  .Msg {
+    @extend %textbox;
+    h3 {
+      margin: 0;
+      margin-top: 0.5rem;
+    }
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    border-radius: 0.4rem;
+    border: 1px solid black;
+  }
+  form {
+    flex: 0 1 100%;
   }
 }
