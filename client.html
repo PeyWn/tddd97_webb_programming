@@ -1,5 +1,7 @@
+<!DOCTYPE html>
 <html>
   <head>
+	<title>Client</title>
     <link href="client.css" type="text/css" rel="stylesheet">
     <script src="client.js" type="text/javascript"></script>
 	<script src="serverstub.js" type="text/javascript"></script>
@@ -80,13 +82,15 @@
 					<form
 					name="FeedForm"
 					required="true"
-					onsubmit="postToFeed(event); this.reset(); return false;">
+					onsubmit="postToFeed(event, 'PV-Submit-msg'); this.reset(); return false;">
   
 						<p>Enter post:</p>
 						<textarea name="feedInput" required="true"></textarea>
-  
-						<button class="BtnPost" type="submit"><p>Submit</p></button>
-					  <p id="PV-Submit-msg"></p>
+						<div>
+							<button class="BtnPost" type="submit"><p>Submit</p></button>
+							<button onclick="refreshWall(event)"; return false'>Refresh</button>
+						</div>
+						<p id="PV-Submit-msg"></p>
 						
 					</form>
 				</div>
@@ -108,9 +112,10 @@
 			<input type="text" name="email" required="true">
 			<button class="BtnPost" type="submit"><p>Submit</p></button>
 			<p id="BV-load-profile-form-message">
-		</form>
+		</form>		
 
-		<div class="Column">		
+		<div class="Column">
+			<div id='bv-post'></div>
 			<div id='bv-wall' class="Wall"></div>
 		</div>
 		<div id='bv-info' class='Info'></div>

@@ -1,33 +1,4 @@
-const views = {
-  login: { head: "load-login-view", body: "login-view", navLink: "" },
-  profile: {
-    head: "load-profile-view",
-    body: "profile-view",
-    navLink: "nav-profile"
-  },
-  browse: {
-    head: "load-browse-view",
-    body: "browse-view",
-    navLink: "nav-browse"
-  },
-  account: {
-    head: "load-account-view",
-    body: "account-view",
-    navLink: "nav-account"
-  }
-};
-const layouts = {
-  layoutNavBar: { head: "load-layout-navbar", body: "layout-navbar" }
-};
-
-function toggleActive(elem) {
-  if (elem.classList.contains("Active")) return;
-  let actives = document.getElementsByClassName("Active");
-  for (i = 0; i < actives.length; i++) {
-    actives[i].classList.remove("Active");
-  }
-  elem.classList.add("Active");
-}
+/* ======= Render Page ======= */
 
 function flushPage() {
   for (view in views) {
@@ -46,38 +17,18 @@ function flushPage() {
   }
 }
 
-function renderProfileByEmail(event) {
-  event.preventDefault();
-
-  let fields = event.target.elements;
-
-  const msgId = "BV-load-profile-form-message";
-
-  writeToElement("", msgId);
-
-  if (fields.email === "" || typeof fields.email === "undefined") {
-    const _msg = "Cant submit an empty field";
-    writeToElement(_msg, msgId);
-    return;
-  }
-
-  const messages = getUserMessages(fields.email.value);
-
-  if (messages === false || typeof messages === "undefined") {
-    const _msg = "Could not find a user by that address";
-    writeToElement(_msg, msgId);
-    return;
-  }
-
-  loadProfileByEmail(fields.email.value);
-  insertWallMessagesTo("bv-wall", messages);
+/** Profile view (Home page) and browse view
+ * Updates wall messages for profile page and browse page
+ */
+function renderUserMessages(email = false) {
+  const data =
+    email === false ? getCurrentUserMessages() : getUserMessages(email);
+  if (data) insertMessagesTo(email === false ? "pv-wall" : "bv-wall", data);
 }
 
-function renderUserMessages() {
-  const data = getCurrentUserMessages();
-  if (data) insertWallMessagesTo("pv-wall", data);
-}
-
+/**
+ *  Renders all pages on login, fetching data from backend
+ */
 function renderPage() {
   for (view in views) {
     let bodyElem = getElement(views[view].body);
@@ -103,6 +54,14 @@ function renderPage() {
   }
 }
 
+/* ======= End ======= */
+
+/* ======= General Helpers ======= */
+
+/**
+ * Helper function fetching element and performing error check
+ * id : Id of the element to fetch
+ */
 function getElement(id) {
   if (document === null || typeof document === "undefined") {
     console.error("Not a valid session");
@@ -118,6 +77,11 @@ function getElement(id) {
   return elem;
 }
 
+/**
+ * Helper function fetching session storage by id and performing
+ * error checks.
+ * id: The id of the session item to fetch
+ */
 function getSessionItem(id) {
   if (window === null || typeof window === "undefined") {
     console.error("Not a valid session");
@@ -132,12 +96,54 @@ function getSessionItem(id) {
   return item;
 }
 
+/**
+ * Checks if the current session has a valid token
+ */
 function hasValidToken() {
   const token = getSessionItem("token");
   if (token === false) return false;
   return true;
 }
 
+/**
+ * Writes a message to a element, used for writing error
+ * messages to empty divs
+ */
+function writeToElement(msg, id) {
+  let errorElem = getElement(id);
+  if (errorElem === false) return;
+
+  errorElem.innerHTML = `${msg} \n`;
+}
+
+/**
+ * Inserts Messages to DOM element inner html
+ * @param {DOM elem id} id
+ * @param {Array of Messages} messages {writer: String, content: String}
+ */
+function insertMessagesTo(id, messages) {
+  let infoElem = getElement(id);
+  if (infoElem === false) return;
+  infoElem.innerHTML = null;
+  messages.forEach(msg => {
+    infoElem.innerHTML += `
+      <div class='Msg'>
+        <p>${msg.content}</p>
+        <h3>${msg.writer}</h3>
+      </div>
+      `;
+  });
+}
+
+/* ======= End ======= */
+
+/* ======= Login View ======= */
+
+/**
+ *Validates login by checking password validity and fetching token from
+ *backend. If login succeeds, calls renderpage to render all pages and
+ *redirect to profile view
+ */
 function validateLogin(event) {
   event.preventDefault();
   let fields = event.target.elements;
@@ -168,13 +174,6 @@ function validateLogin(event) {
 
     writeToElement(_msg, msgId);
   }
-}
-
-function writeToElement(msg, id) {
-  let errorElem = getElement(id);
-  if (errorElem === false) return;
-
-  errorElem.innerText = `${msg} \n`;
 }
 
 function validatePassLength(password) {
@@ -215,6 +214,10 @@ function validateSignUp(event) {
 
   writeToElement(serverstub.signUp(postMsg).message, msgId);
 }
+
+/* ======= End ======= */
+
+/* ======= Account View ======= */
 
 function changePassword(event) {
   event.preventDefault();
@@ -268,32 +271,16 @@ function signOut(event) {
   window.sessionStorage.setItem("token", "");
 }
 
+/* ======= End ======= */
+
+/* ======= Browse View ======= */
+
 function loadProfileByEmail(email) {
   let infoElem = getElement("bv-info");
   if (infoElem === false) return;
   const token = window.sessionStorage.getItem("token");
   if (token === null || typeof token === "undefined") return;
   const { success, data } = serverstub.getUserDataByEmail(token, email);
-  if (success) {
-    infoElem.innerHTML = `
-    <h3>Email: ${data.email}</h3>
-    <h3>Firstname: ${data.firstname}</h3>
-    <h3>Familyname: ${data.familyname}</h3>
-    <h3>Gender: ${data.gender}</h3>
-    <h3>City: ${data.city}</h3>
-    <h3>Country: ${data.country}</h3>
-    `;
-  }
-}
-
-/* ======= Home-view js lib  ======= */
-
-function loadProfileInfo() {
-  let infoElem = getElement("pv-info");
-  if (infoElem === false) return;
-  const token = window.sessionStorage.getItem("token");
-  if (token === null || typeof token === "undefined") return;
-  const { success, data } = serverstub.getUserDataByToken(token);
   if (success) {
     infoElem.innerHTML = `
     <h3>Email: ${data.email}</h3>
@@ -314,6 +301,91 @@ function getUserMessages(email) {
   return data;
 }
 
+/** Browse Tab
+ * Loads a profile from backend and displays it on the browse tab
+ * @param {*} event
+ */
+function renderProfileByEmail(event) {
+  event.preventDefault();
+
+  let fields = event.target.elements;
+
+  const msgId = "BV-load-profile-form-message";
+
+  writeToElement("", msgId);
+
+  if (fields.email === "" || typeof fields.email === "undefined") {
+    const _msg = "Cant submit an empty field";
+    writeToElement(_msg, msgId);
+    return;
+  }
+
+  const messages = getUserMessages(fields.email.value);
+
+  if (messages === false || typeof messages === "undefined") {
+    const _msg = "Could not find a user by that address";
+    writeToElement(_msg, msgId);
+    return;
+  }
+
+  const formMsg = "bv-submit-msg";
+  const form = `
+    <form
+			name="FeedForm"
+			required="true"
+			onsubmit="postToFeed(event,  '${formMsg}', '${fields.email.value}'); this.reset(); return false;">
+
+				<p>Enter post:</p>
+        <textarea name="feedInput" required="true"></textarea>
+        <div>
+            <button class="BtnPost" type="submit"><p>Submit</p></button>
+            <button onclick="refreshWall(event)"; return false'>Refresh</button>
+        </div>
+			  <p id=${formMsg}></p>
+				
+    </form>
+      `;
+
+  loadProfileByEmail(fields.email.value);
+  writeToElement(form, "bv-post");
+  insertMessagesTo("bv-wall", messages);
+}
+
+/* ======= End ======= */
+
+/* ======= Home-view ======= */
+
+function refreshWall(event) {
+  event.preventDefault();
+
+  const view = getSessionItem("CURRENT_VIEW");
+  if (view !== false && view === "profile") {
+    renderUserMessages();
+    return;
+  }
+  const item = getSessionItem("bv-user-email");
+  console.log(item);
+  if (item !== false) renderUserMessages(item);
+}
+
+function loadProfileInfo() {
+  let infoElem = getElement("pv-info");
+  if (infoElem === false) return;
+  const token = window.sessionStorage.getItem("token");
+  if (token === null || typeof token === "undefined") return;
+  const { success, data } = serverstub.getUserDataByToken(token);
+  if (success) {
+    infoElem.innerHTML = `
+    <h3>Email: ${data.email}</h3>
+    <h3>Firstname: ${data.firstname}</h3>
+    <h3>Familyname: ${data.familyname}</h3>
+    <h3>Gender: ${data.gender}</h3>
+    <h3>City: ${data.city}</h3>
+    <h3>Country: ${data.country}</h3>
+    `;
+  }
+}
+
 function getCurrentUserMessages() {
   const token = getSessionItem("token");
   if (token === false) return false;
@@ -322,24 +394,8 @@ function getCurrentUserMessages() {
   return data;
 }
 
-function insertWallMessagesTo(id, messages) {
-  let infoElem = getElement(id);
-  if (infoElem === false) return;
-  infoElem.innerHTML = null;
-  messages.forEach(msg => {
-    infoElem.innerHTML += `
-      <div class='Msg'>
-        <p>${msg.content}</p>
-        <h3>${msg.writer}</h3>
-      </div>
-      `;
-  });
-}
-
-function postToFeed(event) {
+function postToFeed(event, msgId, userEmail = false) {
   event.preventDefault();
-
-  const msgId = "PV-Submit-msg";
 
   let fields = event.target.elements;
   if (
@@ -356,25 +412,82 @@ function postToFeed(event) {
     return;
   }
 
-  const {
-    data: { email }
-  } = serverstub.getUserDataByToken(token);
+  if (userEmail !== false) {
+    const storageId = "bv-user-email";
+    window.sessionStorage.setItem(storageId, userEmail);
+  }
 
-  if ((email === "") | (typeof email === "undefined")) {
-    const _msg = "User not found when posting on wall";
+  const response =
+    userEmail === false
+      ? serverstub.getUserDataByToken(token)
+      : serverstub.getUserDataByEmail(token, userEmail);
+
+  if (
+    typeof response === "undefined" ||
+    !("data" in response) ||
+    !("email" in response.data) ||
+    response.data.email === "" ||
+    typeof response.data.email === "undefined"
+  ) {
+    const _msg =
+      "message" in response
+        ? response.message
+        : "User not found when posting on wall";
     writeToElement(_msg, msgId);
     return;
   }
+  email = response.data.email;
 
-  const obj = serverstub.postMessage(token, fields.feedInput.value, email);
-  console.log(obj);
-  renderUserMessages();
+  serverstub.postMessage(token, fields.feedInput.value, email);
+  renderUserMessages(userEmail);
 }
 
-/* ======= Home-view the end ======= */
+/* ======= End ======= */
+/**
+ * Sets the Active class to a element and remove it from all others
+ * Called from displayView() function
+ * @param {DOM elem id} elem
+ */
+function toggleActive(elem) {
+  if (elem.classList.contains("Active")) return;
+  let actives = document.getElementsByClassName("Active");
+  for (i = 0; i < actives.length; i++) {
+    actives[i].classList.remove("Active");
+  }
+  elem.classList.add("Active");
+}
 
 /**
- * Abstraction for change view
+ * A object containing all views.
+ * Each view has the id for:
+ *  1. Where to load from head
+ *  2. Where to insert in body
+ *  3. Navigation bar link
+ */
+const views = {
+  login: { head: "load-login-view", body: "login-view", navLink: "" },
+  profile: {
+    head: "load-profile-view",
+    body: "profile-view",
+    navLink: "nav-profile"
+  },
+  browse: {
+    head: "load-browse-view",
+    body: "browse-view",
+    navLink: "nav-browse"
+  },
+  account: {
+    head: "load-account-view",
+    body: "account-view",
+    navLink: "nav-account"
+  }
+};
+const layouts = {
+  layoutNavBar: { head: "load-layout-navbar", body: "layout-navbar" }
+};
+
+/**
+ * Abstraction for displayView()
  * If there is a valid view input, change view
  * otherwise do nothing
  */

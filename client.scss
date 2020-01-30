@@ -1,4 +1,3 @@
-$LV-color: oldlace;
 $Colors: (
   Primary: oldlace,
   Active: salmon,
@@ -72,7 +71,7 @@ body {
   &.Logo {
     @extend %textbox;
 
-    background-color: $LV-color;
+    background-color: map-get($map: $Colors, $key: "Primary");
     flex-grow: calc(1 / 2);
     flex-basis: 340px;
     margin-right: 10px;
@@ -88,7 +87,7 @@ body {
   &.Login {
     @extend %textbox;
 
-    background-color: $LV-color;
+    background-color: map-get($map: $Colors, $key: "Primary");
     flex: calc(1 / 3);
     margin-bottom: 10px;
   }
@@ -96,7 +95,7 @@ body {
   &.Signup {
     @extend %textbox;
 
-    background-color: $LV-color;
+    background-color: map-get($map: $Colors, $key: "Primary");
     flex: calc(2 / 3);
   }
 }
