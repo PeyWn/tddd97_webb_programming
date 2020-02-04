@@ -1,0 +1,1 @@
+create table profile(email varchar(200), password varchar(100), firstName varchar(40), familyName varchar(40), gender varchar(20), city varchar(50), messages varchar(1000), country varchar(50), primary key(email))
