@@ -332,11 +332,11 @@ function renderProfileByEmail(event) {
   const form = `
     <form
 			name="FeedForm"
-			required="true"
+			required
 			onsubmit="postToFeed(event,  '${formMsg}', '${fields.email.value}'); this.reset(); return false;">
 
 				<p>Enter post:</p>
-        <textarea name="feedInput" required="true"></textarea>
+        <textarea name="feedInput" required></textarea>
         <div>
             <button class="BtnPost" type="submit"><p>Submit</p></button>
             <button onclick="refreshWall(event)"; return false'>Refresh</button>

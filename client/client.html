@@ -22,7 +22,6 @@
 			  <div class="LV Login">
 				<form
 				  name="LoginForm"
-				  required="true"
 				  action="#"
 				  onsubmit="return validateLogin(event); return false;"
 				>
@@ -31,10 +30,10 @@
 					type="email"
 					placeholder="your.email@adress.net"
 					name="username"
-					required="true"
+					required
 				  /><br />
 				  <p>Password:</p>
-				  <input type="password" name="password" required="true" />
+				  <input type="password" name="password" required />
 				  <button class="Btn1" type="submit"><p>Login</p></button>
 				  <p id="LV-Login-Form-Message"></p>
 				</form>
@@ -43,7 +42,6 @@
 			  <div class="LV Signup">
 				<form
 				  name="SignUpForm"
-				  required="true"
 				  action="#"
 				  onsubmit="return validateSignUp(event)"
 				>
@@ -52,22 +50,22 @@
 					type="email"
 					placeholder="your.email@adress.net"
 					name="email"
-					required="true"
+					required
 				  /><br />
 				  <p>Password:</p>
-				  <input type="password" name="password" required="true" />
+				  <input type="password" name="password" required />
 				  <p>Repeat Password:</p>
-				  <input type="password" name="password2" required="true" />
+				  <input type="password" name="password2" required />
 				  <p>Given name</p>
-				  <input type="text" name="firstname" required="true" />
+				  <input type="text" name="firstname" required />
 				  <p>Surname:</p>
-				  <input type="text" name="familyname" required="true" />
+				  <input type="text" name="familyname" required />
 				  <p>Gender:</p>
-				  <input type="text" name="gender" required="true" />
+				  <input type="text" name="gender" required />
 				  <p>City:</p>
-				  <input type="text" name="city" required="true" />
+				  <input type="text" name="city" required />
 				  <p>Country:</p>
-				  <input type="text" name="country" required="true" />
+				  <input type="text" name="country" required />
 				  <button class="Btn1" type="submit"><p>Submit</p></button>
 				  <p id="LV-SignUp-Form-Message"></p>
 				</form>
@@ -81,11 +79,10 @@
 				<div class="Post">
 					<form
 					name="FeedForm"
-					required="true"
 					onsubmit="postToFeed(event, 'PV-Submit-msg'); this.reset(); return false;">
   
 						<p>Enter post:</p>
-						<textarea name="feedInput" required="true"></textarea>
+						<textarea name="feedInput" required></textarea>
 						<div>
 							<button class="BtnPost" type="submit"><p>Submit</p></button>
 							<button onclick="refreshWall(event)"; return false'>Refresh</button>
@@ -105,11 +102,10 @@
 		<div class="Browse">
 		<form
 		name="GetWallForm"
-		required="true"
 		onsubmit="renderProfileByEmail(event); return false;"			
 		>
 			<p>Enter user email:</p>
-			<input type="text" name="email" required="true">
+			<input type="text" name="email" required>
 			<button class="BtnPost" type="submit"><p>Submit</p></button>
 			<p id="BV-load-profile-form-message">
 		</form>		
@@ -126,16 +122,15 @@
 	<script id="load-account-view" type=”text/view”>
     <form
 	  name="ChangePassForm"
-	  required="true"
 	  onsubmit="changePassword(event); this.reset(); return false;"
     >
 
     <p>Old password:</p>
-    <input type="password" name="oldPassword" required="true">
+    <input type="password" name="oldPassword" required>
     <p>New password:</p>
-    <input type="password" name="newPassword" required="true">
+    <input type="password" name="newPassword" required>
     <p>Repeat password:</p>
-    <input type="password" name="newPassword2" required="true">
+    <input type="password" name="newPassword2" required>
     
     <button class="Btn1" type="submit"><p>Submit</p></button>
     <p id="AV-change-Form-Message"></p>
