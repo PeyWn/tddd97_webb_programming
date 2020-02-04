@@ -5,7 +5,7 @@ import json
 def get_db():
     db = getattr(g, 'db', None)
     if db is None:
-        db = g.db = sqlite3.connect(DATABASE_URI)
+        db = g.db = sqlite3.connect('database.db')
     return db
 
 def disconnect_db():
@@ -18,7 +18,7 @@ def save_contact(name, number):
     try:
         print("in save_contact")
         database = get_db()
-        print("type of db:" + type(database))
+        print("after get_db")
         get_db().execute("insert into contact values(?,?)", [name, number])
         get_db().commit()
         return True
