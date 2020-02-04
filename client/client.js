@@ -338,7 +338,7 @@ function renderProfileByEmail(event) {
 				<p>Enter post:</p>
         <textarea name="feedInput" required></textarea>
         <div>
-            <button class="BtnPost" type="submit"><p>Submit</p></button>
+            <button class="BtnPost" type="submit">Submit</button>
             <button onclick="refreshWall(event)"; return false'>Refresh</button>
         </div>
 			  <p id=${formMsg}></p>
