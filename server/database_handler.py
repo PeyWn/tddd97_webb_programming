@@ -52,7 +52,7 @@ def make_dictionary_profile(data_list):
         'gender',
         'city',
         'country'
-                ]
+    ]
 
     dict = {}
 
@@ -70,10 +70,10 @@ def get_profile_by_email(email):
         cursor.close()
 
         if len(data) > 1:
-            print("'get_profile_by_email' failed, got no data from database")    
+            print("'get_profile_by_email' failed, got no data from database")
             return False
 
-        return json.dumps(make_dictionary_profile( data[0] ))
+        return json.dumps(make_dictionary_profile(data[0]))
 
     except:
         print("'get_profile_by_email' failed")
@@ -93,31 +93,25 @@ def change_password(email, new_password):
         print("'change_password' failed")
         return False
 
+
 def make_dictionary_messages(data_list):
-    fields = [
-        'email',
-        'messages'
-                ]
 
     dict = {}
-
-    for i in range(len(fields)):
-        dict[fields[i]] = data_list[i]
-
+    list = [e[1:-1] if e[1] == "'" and e[-1] == "'" else e[1:] if e[1] ==
+            "'" else e[:-1] if e[-1] == "'" else e for e in data_list[1][2:-2].split("', '")]
+    dict['email'] = data_list[0]
+    dict['messages'] = list
     return dict
+
 
 def get_messages_by_email(email):
     try:
-        print(email)
         cursor = get_db().execute("SELECT * FROM messages \
                             WHERE email LIKE ?",
-                                [email])
+                                  [email])
 
         data = cursor.fetchall()
         cursor.close()
-
-        print("data")
-        print(data)
 
         return make_dictionary_messages(data[0])
     except Exception as e:
@@ -132,7 +126,7 @@ def add_message_by_email(email, message):
         if data == False:
             return False
 
-        msg = json.loads(data['messages'])
+        msg = data['messages']
         msg.append(message)
         msg = str(msg)
         get_db().execute("UPDATE messages \
