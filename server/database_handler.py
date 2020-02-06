@@ -20,20 +20,31 @@ def disconnect_db():
 def create_profile(data):
     try:
         get_db().execute(
-            "insert into profile values(?,?,?,?,?,?,?)",
-            [data['email'], data['password'], data['firstname'],
-             data['familyname'], data['gender'], data['city'], data['country']])
+            "INSERT INTO profile values(?,?,?,?,?,?,?)",
+            [data['email'],
+             data['password'],
+             data['firstname'],
+             data['familyname'],
+             data['gender'],
+             data['city'],
+             data['country']])
+
+        get_db().execute(
+            "INSERT INTO messages values(?, ?)",
+            [data['email'],
+             "[]"])
 
         return True
 
-    except:
+    except Exception as e:
+        print("'create_profile' failed dur to ", e)
         return False
 
 
 def get_profile_by_email(email):
     try:
         cursor = get_db().execute(
-            'select * from profile where email like ?', [email])
+            'SELECT * FROM profile WHERE email LIKE ?', [email])
         data = cursor.fetchall()
         cursor.close()
 
@@ -43,6 +54,7 @@ def get_profile_by_email(email):
         return json.dumps(data[0])
 
     except:
+        print("'get_profile_by_email' failed")
         return False
 
 
@@ -54,12 +66,8 @@ def change_password(email, new_password):
                          [new_password, email])
         return True
     except:
+        print("'change_password' failed")
         return False
-
-
-def put_crap_db():
-    get_db().execute(
-        "insert into profile values(?, 'panda', 'sven', 'svensson', 'helicopter', 'newheaven', 'pandora')", ['sven@s.c'])
 
 
 def get_messages_by_email(email):
@@ -70,6 +78,7 @@ def get_messages_by_email(email):
 
         return json.dumps(data['messages'])
     except:
+        print("'get_messages_by_email' failed")
         return False
 
 
@@ -89,4 +98,5 @@ def add_message_by_email(email, message):
                          [data, email])
         return True
     except:
+        print("'add_messages_by_email' failed")
         return False
