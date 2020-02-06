@@ -32,13 +32,34 @@ def create_profile(data):
         get_db().execute(
             "INSERT INTO messages values(?, ?)",
             [data['email'],
-             "[]"])
+             data['messages']])
+
+        get_db().commit()
 
         return True
 
     except Exception as e:
         print("'create_profile' failed dur to ", e)
         return False
+
+
+def make_dictionary_profile(data_list):
+    fields = [
+        'email',
+        'password',
+        'firstname',
+        'familyname',
+        'gender',
+        'city',
+        'country'
+                ]
+
+    dict = {}
+
+    for i in range(len(fields)):
+        dict[fields[i]] = data_list[i]
+
+    return dict
 
 
 def get_profile_by_email(email):
@@ -49,9 +70,10 @@ def get_profile_by_email(email):
         cursor.close()
 
         if len(data) > 1:
-            raise Exception
+            print("'get_profile_by_email' failed, got no data from database")    
+            return False
 
-        return json.dumps(data[0])
+        return json.dumps(make_dictionary_profile( data[0] ))
 
     except:
         print("'get_profile_by_email' failed")
@@ -61,24 +83,43 @@ def get_profile_by_email(email):
 def change_password(email, new_password):
     try:
         get_db().execute("UPDATE profile \
-                        SET password = values(?) \
-                        WHERE email = values(?)",
+                        SET password = ? \
+                        WHERE email LIke ?",
                          [new_password, email])
         return True
     except:
         print("'change_password' failed")
         return False
 
+def make_dictionary_messages(data_list):
+    fields = [
+        'email',
+        'messages'
+                ]
+
+    dict = {}
+
+    for i in range(len(fields)):
+        dict[fields[i]] = data_list[i]
+
+    return dict
 
 def get_messages_by_email(email):
     try:
-        data = get_db().execute("SELECT * from messages \
-                            WHERE email = values(?)",
+        print(email)
+        cursor = get_db().execute("SELECT * FROM messages \
+                            WHERE email LIKE ?",
                                 [email])
 
-        return json.dumps(data['messages'])
-    except:
-        print("'get_messages_by_email' failed")
+        data = cursor.fetchall()
+        cursor.close()
+
+        print("data")
+        print(data)
+
+        return make_dictionary_messages(data[0])
+    except Exception as e:
+        print("'get_messages_by_email' failed due to ", e)
         return False
 
 
@@ -89,14 +130,16 @@ def add_message_by_email(email, message):
         if data == False:
             return False
 
-        data = json.loads(data)
-        data.append(message)
-        data = json.dumps(data)
+        msg = json.loads(data['messages'])
+        msg.append(message)
+        msg = str(msg)
         get_db().execute("UPDATE messages \
-                            SET messages = values(?) \
-                            WHERE email = values(?)",
-                         [data, email])
+                            SET messages = ? \
+                            WHERE email LIKE ?",
+                         [msg, email])
+
+        get_db().commit()
         return True
-    except:
-        print("'add_messages_by_email' failed")
+    except Exception as e:
+        print("'add_messages_by_email' failed due to ", e)
         return False

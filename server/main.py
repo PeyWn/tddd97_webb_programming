@@ -70,7 +70,7 @@ def change_password():
                            "message": "Old password is incorrect."})
 
     result = database_handler.change_password(
-        get_email_by_token(data['token']), data['newPassword'])
+        get_email_by_token(data['token']), data['newpassword'])
 
     if result == True:
         return json.dumps({"success": True,
@@ -80,7 +80,7 @@ def change_password():
                            "message": "Something went wrong."})
 
 
-@app.route('/user/singout', methods=['PUT'])
+@app.route('/user/signout', methods=['PUT'])
 def sign_out():
     data = request.get_json()
 
@@ -93,32 +93,37 @@ def sign_out():
                        "message": "Successfully signed out."})
 
 
-@app.route('/user/singin', methods=['GET'])
+@app.route('/user/signin', methods=['GET'])
 def sign_in():
-    try:
-        data = request.get_json()
-        user = json.loads(database_handler.get_profile_by_email(data['email']))
-        if \
-            'email' not in data and \
-            'password' not in data and \
-            'password' not in user and \
-                'email' in user:
-            print('Requset data or user db data wrong')
-            raise Exception
+    data = request.get_json()
 
-        if user['password'] == data['password'] and user['email'] == data['email']:
-            token = generate_token()
-            add_user(token, data['email'])
-            return json.dumps({"success": True,
-                               "message": "Successfully signed in.",
-                               "data": token})
-
-        else:
-            raise Exception
-    except:
+    if 'email' not in data and \
+            'password' not in data:
         return json.dumps({"success": False,
-                           "message": "Wrong username or password."}
-                          )
+                           "message": "Form data missing or incorrect type."})
+
+    user = json.loads(database_handler.get_profile_by_email(data['email']))
+
+    if user == False:
+        return json.dumps({"success": False,
+                           "message": "User does not exist"})
+
+    if 'password' not in user and \
+            'email' in user:
+        return json.dumps({"success": False,
+                           "message": "Something went wrong."})
+
+    if user['password'] == data['password'] and \
+       user['email'] == data['email']:
+        token = generate_token()
+        add_user(token, data['email'])
+        return json.dumps({"success": True,
+                           "message": "Successfully signed in.",
+                           "data": token})
+
+    else:
+        return json.dumps({"success": False,
+                           "message": "Wrong username or password."})
 
 
 @app.route('/user/signup', methods=['PUT'])
@@ -130,7 +135,8 @@ def sign_up():
         'familyname' in data and \
         'gender' in data and \
         'city' in data and \
-            'country' in data:
+        'country' in data and \
+            'messages' in data:
 
         result = database_handler.create_profile(data)
         if result == True:
@@ -176,7 +182,7 @@ def get_profile_by_email():
     })
 
 
-@app.route('/profile/messages', methods=["GET"])
+@app.route('/profile/messages-by-token', methods=["GET"])
 def get_messages_by_token():
     data = request.get_json()
 
@@ -195,7 +201,7 @@ def get_messages_by_token():
     return json.dumps(result)
 
 
-@app.route('/profile/messages', methods=["GET"])
+@app.route('/profile/messages-by-email', methods=["GET"])
 def get_messages_by_email():
     data = request.get_json()
 
@@ -240,13 +246,6 @@ def post_message_by_email():
         return json.dumps({"success": True, "message": "Message posted"})
     else:
         return json.dumps({"success": False, "message": "Something went wrong..."})
-
-
-@app.route('/', methods=['PUT'])
-def tmp():
-    result = database_handler.get_profile_by_email("sven@s.c")
-
-    return result
 
 
 if __name__ == '__main__':
