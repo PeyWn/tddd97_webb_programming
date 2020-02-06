@@ -86,6 +86,8 @@ def change_password(email, new_password):
                         SET password = ? \
                         WHERE email LIke ?",
                          [new_password, email])
+
+        get_db().commit()
         return True
     except:
         print("'change_password' failed")
