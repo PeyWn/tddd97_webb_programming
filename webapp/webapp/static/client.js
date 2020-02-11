@@ -212,7 +212,7 @@ function validateSignUp(event) {
     country: fields.country.value
   };
 
-  writeToElement(serverstub.signUp(postMsg).message, msgId);
+  writeToElement(communication.signUp(postMsg).message, msgId);
 }
 
 /* ======= End ======= */
@@ -513,7 +513,7 @@ function changeView(viewName) {
  */
 displayView = function() {
   if (window === null || typeof window === "undefined") return;
-
+  
   const currentView = getSessionItem("CURRENT_VIEW");
   /**
    * If there is no value stored for the 'CURRENT_VIEW', change to welcome welcome view
