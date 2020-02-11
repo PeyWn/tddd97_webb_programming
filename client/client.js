@@ -342,7 +342,6 @@ function renderProfileByEmail(event) {
             <button onclick="refreshWall(event)"; return false'>Refresh</button>
         </div>
 			  <p id=${formMsg}></p>
-				
     </form>
       `;
 

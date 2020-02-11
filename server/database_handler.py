@@ -1,6 +1,7 @@
 from flask import g
 import sqlite3
 import json
+import ast
 
 
 def get_db():
@@ -95,12 +96,7 @@ def change_password(email, new_password):
 
 
 def make_dictionary_messages(data_list):
-
-    dict = {}
-    list = [e[1:-1] if e[1] == "'" and e[-1] == "'" else e[1:] if e[1] ==
-            "'" else e[:-1] if e[-1] == "'" else e for e in data_list[1][2:-2].split("', '")]
-    dict['email'] = data_list[0]
-    dict['messages'] = list
+    dict = {'email': data_list[0], 'messages': ast.literal_eval(data_list[1])}
     return dict
 
 
