@@ -144,7 +144,7 @@ function insertMessagesTo(id, messages) {
  *backend. If login succeeds, calls renderpage to render all pages and
  *redirect to profile view
  */
-function validateLogin(event) {
+async function validateLogin(event) {
   event.preventDefault();
   let fields = event.target.elements;
   const minLenPass = 3;
@@ -159,7 +159,8 @@ function validateLogin(event) {
     return;
   }
 
-  const token = communication.signIn(fields.username.value, fields.password.value);
+  const token = await communication.signIn(fields.username.value, fields.password.value);
+  console.log('Client, signin communication msg ', token)
 
   if (token.success === true && "data" in token) {
     window.sessionStorage.setItem("token", token.data);
