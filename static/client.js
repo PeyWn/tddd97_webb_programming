@@ -159,7 +159,7 @@ function validateLogin(event) {
     return;
   }
 
-  const token = serverstub.signIn(fields.username.value, fields.password.value);
+  const token = communication.signIn(fields.username.value, fields.password.value);
 
   if (token.success === true && "data" in token) {
     window.sessionStorage.setItem("token", token.data);
