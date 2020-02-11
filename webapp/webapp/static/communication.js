@@ -16,12 +16,12 @@ var communication = (function() {
 
       xhttp = new XMLHttpRequest();
 
-      console.log("Open Request");
       xhttp.open(method, url, true);
-	  console.log("Opened Request");
-	  xhttp.setRequestHeader("Content-Type", "application/json");
+      xhttp.setRequestHeader("Content-Type", "application/json");
+      console.log("Request method: ", method, typeof method);
+      console.log("Request url: ", url, typeof url);
+      console.log("Request message: ", message, typeof message);
       xhttp.send(message);
-      console.log("Sent Request");
 
       return new Promise(function(resolve, reject) {
         xhttp.onreadystatechange = function() {
@@ -70,11 +70,7 @@ var communication = (function() {
         email: email,
         password: password
       });
-      let response = await this.getRequestPromise(
-        "http://127.0.0.1:5000/user/signin",
-        msg,
-        "GET"
-      );
+      let response = await this.getRequestPromise('/user/signin', msg, "GET");
       console.log("Outer response: ", response);
       return response
         ? response
@@ -88,9 +84,22 @@ var communication = (function() {
       return;
     },
 
-    signUp: function(inputObject) {
+    signUp: async function(inputObject) {
       // {email, password, firstname, familyname, gender, city, country}
-      return;
+      try {
+        let response = await this.getRequestPromise('/user/signup', JSON.stringify(inputObject), "PUT");
+        console.log("Outer response: ", response);
+        return response
+          ? response
+          : {
+              success: false,
+              message: `No response for server`
+            };
+        
+      } catch (error) {
+        console.log(error)
+      }
+
     },
 
     changePassword: function(token, oldPassword, newPassword) {

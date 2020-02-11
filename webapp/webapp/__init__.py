@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 from flask import Flask, request
-import database_handler
+app = Flask(__name__)
+
+import webapp.database_handler
 import json
 from random import randrange
-
-app = Flask(__name__)
 
 logged_in_users = {}
 
 
 def validate_signin(email, password):
-    data = json.loads(database_handler.get_profile_by_email(email))
+    data = json.loads(webapp.database_handler.get_profile_by_email(email))
     if 'password' in data and data['password'] == password:
         return True
     return False
@@ -69,7 +69,7 @@ def change_password():
         return json.dumps({"success": False,
                            "message": "Old password is incorrect."})
 
-    result = database_handler.change_password(
+    result = webapp.database_handler.change_password(
         get_email_by_token(data['token']), data['newpassword'])
 
     if result == True:
@@ -95,14 +95,15 @@ def sign_out():
 
 @app.route('/user/signin', methods=['GET'])
 def sign_in():
-    data = request.get_json()
 
+    data = request.get_json()
+    print('Request', data, type(data))
     if 'email' not in data and \
             'password' not in data:
         return json.dumps({"success": False,
                            "message": "Form data missing or incorrect type."})
 
-    user = json.loads(database_handler.get_profile_by_email(data['email']))
+    user = json.loads(webapp.database_handler.get_profile_by_email(data['email']))
 
     if user == False:
         return json.dumps({"success": False,
@@ -138,7 +139,7 @@ def sign_up():
         'country' in data and \
             'messages' in data:
 
-        result = database_handler.create_profile(data)
+        result = webapp.database_handler.create_profile(data)
         if result == True:
             return json.dumps({"success": True,
                                "message": "Successfully created a new user."})
@@ -154,7 +155,7 @@ def sign_up():
 def get_profile_by_token():
     data = request.get_json()
     if 'token' in data and has_valid_token(data['token']):
-        return database_handler.get_profile_by_email(get_email_by_token(data['token']))
+        return webapp.database_handler.get_profile_by_email(get_email_by_token(data['token']))
     return json.dumps({
         "success": False,
         "message": "You are not signed in."
@@ -168,7 +169,7 @@ def get_profile_by_email():
         'token' in data and \
             has_valid_token(data['token']):
 
-        res = database_handler.get_profile_by_email(data['email'])
+        res = webapp.database_handler.get_profile_by_email(data['email'])
         if res == False:
             return json.dumps({
                 "success": False,
@@ -192,7 +193,7 @@ def get_messages_by_token():
     if not has_valid_token(data['token']):
         return json.dumps({"success": False,
                            "message": "You are not signed in."})
-    result = database_handler.get_messages_by_email(
+    result = webapp.database_handler.get_messages_by_email(
         get_email_by_token(data['token']))
 
     if result == False:
@@ -215,7 +216,7 @@ def get_messages_by_email():
         return json.dumps({"success": False,
                            "message": "You are not signed in."})
 
-    result = database_handler.get_messages_by_email(data['email'])
+    result = webapp.database_handler.get_messages_by_email(data['email'])
 
     if result == False:
         return json.dumps({"success": False,
@@ -239,7 +240,7 @@ def post_message_by_email():
     if not has_valid_token(data['token']):
         return json.dumps({"success": False, "message": "You are not signed in."})
 
-    result = database_handler.add_message_by_email(
+    result = webapp.database_handler.add_message_by_email(
         data['email'], data['content'])
 
     if result == True:
@@ -248,5 +249,10 @@ def post_message_by_email():
         return json.dumps({"success": False, "message": "Something went wrong..."})
 
 
+@app.route('/')
+def root():
+    return app.send_static_file('client.html')
+    
+
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
