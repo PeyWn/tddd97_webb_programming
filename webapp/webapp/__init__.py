@@ -93,11 +93,11 @@ def sign_out():
                        "message": "Successfully signed out."})
 
 
-@app.route('/user/signin', methods=['GET'])
+@app.route('/user/signin', methods=['POST'])
 def sign_in():
 
     data = request.get_json()
-    print('Request', data, type(data))
+    print('Request signin data: ', data, type(data))
     if 'email' not in data and \
             'password' not in data:
         return json.dumps({"success": False,
@@ -130,7 +130,6 @@ def sign_in():
 @app.route('/user/signup', methods=['PUT'])
 def sign_up():
     data = request.get_json()
-    print(data, type(data))
     if 'messages' not in data:
         data['messages'] = '[]'
         print(data, type(data)) 

@@ -10,7 +10,7 @@
 var communication = (function() {
   var communication = {
     getRequestPromise: function(url = "/wrong", message = "", method = "PUT") {
-      if (method !== "GET" && method !== "PUT") {
+      if (method !== "POST" && method !== "PUT") {
         return { success: false, message: `${method} in not a valid method` };
       }
 
@@ -18,15 +18,17 @@ var communication = (function() {
 
       xhttp.open(method, url, true);
       xhttp.setRequestHeader("Content-Type", "application/json");
+      console.log("Request ", xhttp);
       console.log("Request method: ", method, typeof method);
       console.log("Request url: ", url, typeof url);
       console.log("Request message: ", message, typeof message);
       xhttp.send(message);
+      console.log("Request sent ", xhttp);
 
       return new Promise(function(resolve, reject) {
         xhttp.onreadystatechange = function() {
           if (this.readyState == 4 && this.status == 200) {
-            console.log('Ready to resolve ', this.responseText);
+            console.log("Ready to resolve ", this.responseText);
             try {
               resolve(JSON.parse(this.responseText));
             } catch (error) {
@@ -35,7 +37,7 @@ var communication = (function() {
                 message: `Something went wrong: ${error ? error : "error..."}`
               });
             }
-          } 
+          }
         };
       });
     },
@@ -60,13 +62,13 @@ var communication = (function() {
       return;
     },
 
-    signIn: async function(email, password) {
+    signIn: function(email, password) {
       msg = JSON.stringify({
         email: email,
         password: password
       });
-      let response = await this.getRequestPromise('/user/signin', msg, "GET");
-      console.log("Outer response: ", response);
+      let response = this.getRequestPromise("/user/signin", msg, "POST");
+      console.log("Communication response from server: ", response);
       return response
         ? response
         : {
@@ -82,7 +84,11 @@ var communication = (function() {
     signUp: async function(inputObject) {
       // {email, password, firstname, familyname, gender, city, country}
       try {
-        let response = await this.getRequestPromise('/user/signup', JSON.stringify(inputObject), "PUT");
+        let response = await this.getRequestPromise(
+          "/user/signup",
+          JSON.stringify(inputObject),
+          "PUT"
+        );
         console.log("Outer response: ", response);
         return response
           ? response
@@ -90,11 +96,9 @@ var communication = (function() {
               success: false,
               message: `No response for server`
             };
-        
       } catch (error) {
-        console.log(error)
+        console.log(error);
       }
-
     },
 
     changePassword: function(token, oldPassword, newPassword) {
