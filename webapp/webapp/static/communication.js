@@ -10,7 +10,7 @@
 var communication = (function() {
   var communication = {
     getRequestPromise: function(url = "/wrong", message = "", method = "PUT") {
-      if (method !== "POST" && method !== "PUT") {
+      if (method !== "POST" && method !== "PUT" && method !== "GET") {
         return { success: false, message: `${method} in not a valid method` };
       }
 
@@ -18,7 +18,6 @@ var communication = (function() {
 
       xhttp.open(method, url, true);
       xhttp.setRequestHeader("Content-Type", "application/json");
-      console.log("Request ", xhttp);
       console.log("Request method: ", method, typeof method);
       console.log("Request url: ", url, typeof url);
       console.log("Request message: ", message, typeof message);
@@ -81,15 +80,15 @@ var communication = (function() {
       return;
     },
 
-    signUp: async function(inputObject) {
+    signUp: function(inputObject) {
       // {email, password, firstname, familyname, gender, city, country}
       try {
-        let response = await this.getRequestPromise(
+        let response = this.getRequestPromise(
           "/user/signup",
           JSON.stringify(inputObject),
           "PUT"
         );
-        console.log("Outer response: ", response);
+        console.log("Communication response from server: ", response);
         return response
           ? response
           : {
@@ -97,7 +96,10 @@ var communication = (function() {
               message: `No response for server`
             };
       } catch (error) {
-        console.log(error);
+        return {
+          success: false,
+          message: `Server response error: ${error}`
+        };
       }
     },
 

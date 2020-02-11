@@ -183,7 +183,7 @@ function validatePassLength(password) {
   return password.length > minLenPass;
 }
 
-function validateSignUp(event) {
+async function validateSignUp(event) {
   event.preventDefault();
   let fields = event.target.elements;
 
@@ -213,7 +213,10 @@ function validateSignUp(event) {
     country: fields.country.value
   };
 
-  writeToElement(communication.signUp(postMsg).message, msgId);
+  let response = await communication.signUp(postMsg)
+  console.log('Client, signup communication msg ', response.message)
+
+  writeToElement(response.message, msgId);
 }
 
 /* ======= End ======= */

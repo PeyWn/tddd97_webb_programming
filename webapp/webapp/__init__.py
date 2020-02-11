@@ -8,7 +8,6 @@ from random import randrange
 
 logged_in_users = {}
 
-
 def validate_signin(email, password):
     data = json.loads(webapp.database_handler.get_profile_by_email(email))
     if 'password' in data and data['password'] == password:
@@ -54,23 +53,23 @@ def remove_user(token):
 def change_password():
     data = request.get_json()
 
-    if 'token' not in data and 'oldpassword' not in data and \
+    if 'Token' not in request.headers and 'oldpassword' not in data and \
             'newpassword' not in data:
         return json.dumps({"success": False,
                            "message": "Form data missing or incorrect type."})
 
-    if has_valid_token(data['token']) == False:
+    if has_valid_token(request.headers['token']) == False:
         return json.dumps({"success": False,
                            "message": "You are not logged in."})
 
-    email = get_email_by_token(data['token'])
+    email = get_email_by_token(request.headers['token'])
 
     if validate_signin(email, data['oldpassword']) == False:
         return json.dumps({"success": False,
                            "message": "Old password is incorrect."})
 
     result = webapp.database_handler.change_password(
-        get_email_by_token(data['token']), data['newpassword'])
+        get_email_by_token(request.headers['token']), data['newpassword'])
 
     if result == True:
         return json.dumps({"success": True,
@@ -84,20 +83,19 @@ def change_password():
 def sign_out():
     data = request.get_json()
 
-    if 'token' not in data and data['token'] not in logged_in_users:
+    if 'Token' not in request.headers and request.headers['token'] not in logged_in_users:
         return json.dumps({"success": False,
                            "message": "You are not signed in."})
 
-    del logged_in_users[data['token']]
+    del logged_in_users[request.headers['token']]
     return json.dumps({"success": True,
                        "message": "Successfully signed out."})
 
 
 @app.route('/user/signin', methods=['POST'])
 def sign_in():
-
     data = request.get_json()
-    print('Request signin data: ', data, type(data))
+
     if 'email' not in data and \
             'password' not in data:
         return json.dumps({"success": False,
@@ -132,7 +130,6 @@ def sign_up():
     data = request.get_json()
     if 'messages' not in data:
         data['messages'] = '[]'
-        print(data, type(data)) 
     if 'email' in data and \
         'password' in data and \
         'firstname' in data and \
@@ -140,7 +137,7 @@ def sign_up():
         'gender' in data and \
         'city' in data and \
         'country' in data and \
-        'messages' in data:
+            'messages' in data:
 
         result = webapp.database_handler.create_profile(data)
         if result == True:
@@ -156,21 +153,20 @@ def sign_up():
 
 @app.route('/profile/get-by-token', methods=['GET'])
 def get_profile_by_token():
-    data = request.get_json()
-    if 'token' in data and has_valid_token(data['token']):
-        return webapp.database_handler.get_profile_by_email(get_email_by_token(data['token']))
+    if 'Token' in request.headers and has_valid_token(request.headers['token']):
+        return webapp.database_handler.get_profile_by_email(get_email_by_token(request.headers['token']))
     return json.dumps({
         "success": False,
         "message": "You are not signed in."
     })
 
 
-@app.route('/profile/get-by-email', methods=['GET'])
+@app.route('/profile/get-by-email', methods=['POST'])
 def get_profile_by_email():
     data = request.get_json()
     if 'email' in data and \
-        'token' in data and \
-            has_valid_token(data['token']):
+        'Token' in request.headers and \
+            has_valid_token(request.headers['token']):
 
         res = webapp.database_handler.get_profile_by_email(data['email'])
         if res == False:
@@ -188,16 +184,14 @@ def get_profile_by_email():
 
 @app.route('/profile/messages-by-token', methods=["GET"])
 def get_messages_by_token():
-    data = request.get_json()
-
-    if 'token' not in data:
+    if 'Token' not in request.headers:
         return json.dumps({"success": False,
                            "message": "Form data missing or incorrect type."})
-    if not has_valid_token(data['token']):
+    if not has_valid_token(request.headers['token']):
         return json.dumps({"success": False,
                            "message": "You are not signed in."})
     result = webapp.database_handler.get_messages_by_email(
-        get_email_by_token(data['token']))
+        get_email_by_token(request.headers['token']))
 
     if result == False:
         return json.dumps({"success": False,
@@ -205,17 +199,17 @@ def get_messages_by_token():
     return json.dumps(result)
 
 
-@app.route('/profile/messages-by-email', methods=["GET"])
+@app.route('/profile/messages-by-email', methods=["POST"])
 def get_messages_by_email():
     data = request.get_json()
 
-    if not ('token' in data and
+    if not ('Token' in request.headers and
             'email' in data):
 
         return json.dumps({"success": False,
                            "message": "Form data missing or incorrect type."})
 
-    if not has_valid_token(data['token']):
+    if not has_valid_token(request.headers['token']):
         return json.dumps({"success": False,
                            "message": "You are not signed in."})
 
@@ -233,14 +227,14 @@ def post_message_by_email():
     data = request.get_json()
 
     if not (
-        'token' in data and
+        'Token' in request.headers and
         'email' in data and
         'content' in data
     ):
         return json.dumps({"success": False,
                            "message": "Form data missing or incorrect type."})
 
-    if not has_valid_token(data['token']):
+    if not has_valid_token(request.headers['token']):
         return json.dumps({"success": False, "message": "You are not signed in."})
 
     result = webapp.database_handler.add_message_by_email(
@@ -251,11 +245,8 @@ def post_message_by_email():
     else:
         return json.dumps({"success": False, "message": "Something went wrong..."})
 
-
 @app.route('/')
 def root():
     return app.send_static_file('client.html')
-    
-
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
