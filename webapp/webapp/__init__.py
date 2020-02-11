@@ -130,6 +130,10 @@ def sign_in():
 @app.route('/user/signup', methods=['PUT'])
 def sign_up():
     data = request.get_json()
+    print(data, type(data))
+    if 'messages' not in data:
+        data['messages'] = '[]'
+        print(data, type(data)) 
     if 'email' in data and \
         'password' in data and \
         'firstname' in data and \
@@ -137,7 +141,7 @@ def sign_up():
         'gender' in data and \
         'city' in data and \
         'country' in data and \
-            'messages' in data:
+        'messages' in data:
 
         result = webapp.database_handler.create_profile(data)
         if result == True:

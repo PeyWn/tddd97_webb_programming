@@ -7,7 +7,7 @@ import ast
 def get_db():
     db = getattr(g, 'db', None)
     if db is None:
-        db = g.db = sqlite3.connect('database.db')
+        db = g.db = sqlite3.connect('webapp/database.db')
     return db
 
 
@@ -40,7 +40,7 @@ def create_profile(data):
         return True
 
     except Exception as e:
-        print("'create_profile' failed dur to ", e)
+        print("'create_profile' failed due to ", e)
         return False
 
 

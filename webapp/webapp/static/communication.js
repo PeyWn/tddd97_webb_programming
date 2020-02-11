@@ -26,7 +26,7 @@ var communication = (function() {
       return new Promise(function(resolve, reject) {
         xhttp.onreadystatechange = function() {
           if (this.readyState == 4 && this.status == 200) {
-            console.log(this.responseText);
+            console.log('Ready to resolve ', this.responseText);
             try {
               resolve(JSON.parse(this.responseText));
             } catch (error) {
@@ -35,12 +35,7 @@ var communication = (function() {
                 message: `Something went wrong: ${error ? error : "error..."}`
               });
             }
-          } else {
-            reject({
-              success: false,
-              message: `Promise rejected`
-            });
-          }
+          } 
         };
       });
     },
