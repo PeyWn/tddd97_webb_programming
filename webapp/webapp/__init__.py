@@ -67,6 +67,12 @@ def validate_signin(email, password):
     return False
 
 
+def validate_password(password):
+    if len(password) >= 4:
+        return True
+    return False
+
+
 @app.route('/profile/passchange', methods=['PUT'])
 def change_password():
     data = request.get_json()
@@ -85,6 +91,10 @@ def change_password():
     if validate_signin(email, data['oldpassword']) == False:
         return json.dumps({"success": False,
                            "message": "Old password is incorrect."})
+
+    if validate_password(data['newpassword']):
+        return json.dumps({"success": False,
+                           "message": "Invalid password, must be of length 4 or greater"})
 
     result = webapp.database_handler.change_password(
         session.get_email_by_token(request.headers['token']), data['newpassword'])
@@ -146,25 +156,29 @@ def sign_up():
     data = request.get_json()
     if 'messages' not in data:
         data['messages'] = '[]'
-    if 'email' in data and \
-        'password' in data and \
-        'firstname' in data and \
-        'familyname' in data and \
-        'gender' in data and \
-        'city' in data and \
-        'country' in data and \
-            'messages' in data:
+    if 'email' not in data or \
+        'password' not in data or \
+        'firstname' not in data or \
+        'familyname' not in data or \
+        'gender' not in data or \
+        'city' not in data or \
+        'country' not in data or \
+            'messages' not in data:
 
-        result = webapp.database_handler.create_profile(data)
-        if result == True:
-            return json.dumps({"success": True,
-                               "message": "Successfully created a new user."})
-        else:
-            return json.dumps({"success": False,
-                               "message": "Something went wrong."})
+        return json.dumps({"success": False,
+                           "message": "Form data missing or incorrect type."})                           
+
+    if validate_password(data['newpassword']):
+        return json.dumps({"success": False,
+                           "message": "Invalid password, must be of length 4 or greater"})
+
+    result = webapp.database_handler.create_profile(data)
+    if result == True:
+        return json.dumps({"success": True,
+                           "message": "Successfully created a new user."})
     else:
         return json.dumps({"success": False,
-                           "message": "Form data missing or incorrect type."})
+                           "message": "Something went wrong."})
 
 
 @app.route('/profile/get-by-token', methods=['GET'])
@@ -217,12 +231,22 @@ def get_messages_by_token():
         return json.dumps({"success": False,
                            "message": "You are not signed in."})
     email = session.get_email_by_token(request.headers['token'])
-    result = webapp.database_handler.get_messages_by_email(email)
+    profile = webapp.database_handler.get_profile_by_email(email)
 
-    if result == False:
-        return json.dumps({"success": False,
-                           "message": "Something went wrong..."})
-    return json.dumps(result)
+    if profile == False:
+        return json.dumps({
+            "success": False,
+            "message": "Someting went wrong..."
+        })
+    profile = json.loads(profile)
+    if 'password' not in profile:
+        return json.dumps({
+            "success": False,
+            "message": "Something went wrong."
+        })
+    del profile['password']
+    return json.dumps(profile)
+
 
 @app.route('/profile/messages-by-email', methods=["POST"])
 def get_messages_by_email():
