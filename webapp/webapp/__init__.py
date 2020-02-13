@@ -10,14 +10,14 @@ class Session:
     def __init__(self):
         self.__logged_in_users = {}
 
-    def validate_signin(self, email, password):
-        data = json.loads(webapp.database_handler.get_profile_by_email(email))
-        if 'password' in data and data['password'] == password:
-            return True
-        return False
-
     def get_email_by_token(self, token):
-        return self.__logged_in_users[token]
+        for email, val in self.__logged_in_users.items():
+            if val == token:
+                return email
+        return None
+
+    def get_token_by_email(self, email):
+        return self.__logged_in_users[email]
 
     def generate_token(self):
         letters = "abcdefghiklmnopqrstuvwwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
@@ -28,40 +28,43 @@ class Session:
             return self.generate_token()
         return token
 
-    def get_token_by_email(email):
-        for token, mail in __logged_in_users.items():
-            if mail == email:
-                return token
-        return None
-
     def has_valid_session(self, email):
-        if email in self.__logged_in_users.values():
+        if email in self.__logged_in_users.keys():
             token = self.get_token_by_email(email)
-            if token != None and has_valid_token(token):
+            if token != None and self.has_valid_token(token):
                 return True
         return False
 
     def has_valid_token(self, token):
-        if token in self.__logged_in_users.keys():
+        if token in self.__logged_in_users.values():
             return True
         return False
 
     def create_session(self, email):
-        if email and token:
+        if email:
             token = self.generate_token()
-            self.__logged_in_users[token] = email
+            self.__logged_in_users[email] = token
             return token
         return None
 
     def end_session(self, token):
-        if token in self.__logged_in_users:
-            del self.__logged_in_users[token]
+        if self.has_valid_token(token):
+            email = self.get_email_by_token(token)
+            if (email != None):
+                del self.__logged_in_users[email]
             return True
         return False
 
 
 global session
 session = Session()
+
+
+def validate_signin(email, password):
+    data = json.loads(webapp.database_handler.get_profile_by_email(email))
+    if 'password' in data and data['password'] == password:
+        return True
+    return False
 
 
 @app.route('/profile/passchange', methods=['PUT'])
@@ -79,7 +82,7 @@ def change_password():
 
     email = session.get_email_by_token(request.headers['token'])
 
-    if session.validate_signin(email, data['oldpassword']) == False:
+    if validate_signin(email, data['oldpassword']) == False:
         return json.dumps({"success": False,
                            "message": "Old password is incorrect."})
 
@@ -96,7 +99,8 @@ def change_password():
 
 @app.route('/user/signout', methods=['PUT'])
 def sign_out():
-    if 'Token' not in request.headers or not session.has_valid_token(request.headers['token']):
+    if 'Token' not in request.headers or \
+            not session.has_valid_token(request.headers['token']):
         return json.dumps({"success": False,
                            "message": "You are not signed in."})
 
@@ -114,9 +118,6 @@ def sign_in():
         return json.dumps({"success": False,
                            "message": "Form data missing or incorrect type."})
 
-    if session.has_valid_session(data['email']):
-
-
     user = json.loads(
         webapp.database_handler.get_profile_by_email(data['email']))
 
@@ -125,17 +126,16 @@ def sign_in():
                            "message": "User does not exist"})
 
     if 'password' not in user or \
-            'email' in user:
+            'email' not in user:
         return json.dumps({"success": False,
-                           "message": "Something went wrong."})
+                           "message": "Something went wrong in the db."})
 
     if user['password'] == data['password'] and \
-       user['email'] == data['email']:
+            user['email'] == data['email']:
         token = session.create_session(data['email'])
         return json.dumps({"success": True,
                            "message": "Successfully signed in.",
                            "data": token})
-
     else:
         return json.dumps({"success": False,
                            "message": "Wrong username or password."})
@@ -171,9 +171,9 @@ def sign_up():
 def get_profile_by_token():
     if 'Token' in request.headers:
         token = session.has_valid_token(request.headers['token'])
-        if token
-        email = session.get_email_by_token(request.headers['token'])
-        return webapp.database_handler.get_profile_by_email(email)
+        if token:
+            email = session.get_email_by_token(request.headers['token'])
+            return webapp.database_handler.get_profile_by_email(email)
     return json.dumps({
         "success": False,
         "message": "You are not signed in."
@@ -187,13 +187,20 @@ def get_profile_by_email():
         'Token' in request.headers and \
             session.has_valid_token(request.headers['token']):
 
-        res = webapp.database_handler.get_profile_by_email(data['email'])
-        if res == False:
+        profile = webapp.database_handler.get_profile_by_email(data['email'])
+        if profile == False:
             return json.dumps({
                 "success": False,
                 "message": "Someting went wrong..."
             })
-        return res
+        profile = json.loads(profile)
+        if 'password' not in profile:
+            return json.dumps({
+                "success": False,
+                "message": "Something went wrong."
+            })
+        del profile['password']
+        return json.dumps(profile)
 
     return json.dumps({
         "success": False,
@@ -206,17 +213,16 @@ def get_messages_by_token():
     if 'Token' not in request.headers:
         return json.dumps({"success": False,
                            "message": "Form data missing or incorrect type."})
-    if not has_valid_token(request.headers['token']):
+    if not session.has_valid_token(request.headers['token']):
         return json.dumps({"success": False,
                            "message": "You are not signed in."})
-    email = get_email_by_token(request.headers['token'])
+    email = session.get_email_by_token(request.headers['token'])
     result = webapp.database_handler.get_messages_by_email(email)
 
     if result == False:
         return json.dumps({"success": False,
                            "message": "Something went wrong..."})
     return json.dumps(result)
-
 
 @app.route('/profile/messages-by-email', methods=["POST"])
 def get_messages_by_email():
@@ -226,7 +232,7 @@ def get_messages_by_email():
         return json.dumps({"success": False,
                            "message": "Form data missing or incorrect type."})
 
-    if not has_valid_token(request.headers['token']):
+    if not session.has_valid_token(request.headers['token']):
         return json.dumps({"success": False,
                            "message": "You are not signed in."})
 
@@ -245,11 +251,11 @@ def post_message_by_email():
 
     if 'Token' not in request.headers or \
         'email' not in data or \
-        'content' not in data:
+            'content' not in data:
         return json.dumps({"success": False,
                            "message": "Form data missing or incorrect type."})
 
-    if not has_valid_token(request.headers['token']):
+    if not session.has_valid_token(request.headers['token']):
         return json.dumps({"success": False, "message": "You are not signed in."})
 
     result = webapp.database_handler.add_message_by_email(
