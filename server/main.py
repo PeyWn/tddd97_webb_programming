@@ -84,6 +84,7 @@ def change_password():
 @app.route('/user/signout', methods=['PUT'])
 def sign_out():
 
+    #TODO Dont crash
     if 'Token' not in request.headers and request.headers['Token'] not in logged_in_users:
         return json.dumps({"success": False,
                            "message": "You are not signed in."})
@@ -140,6 +141,7 @@ def sign_up():
         'country' in data and \
             'messages' in data:
 
+        #TODO pass len
         result = database_handler.create_profile(data)
         if result == True:
             return json.dumps({"success": True,
@@ -154,6 +156,7 @@ def sign_up():
 
 @app.route('/profile/get-by-token', methods=['GET'])
 def get_profile_by_token():
+    #TODO no pass
     print(has_valid_token(request.headers['Token']))
     if 'Token' in request.headers and has_valid_token(request.headers['Token']):
         return database_handler.get_profile_by_email(get_email_by_token(request.headers['Token']))
