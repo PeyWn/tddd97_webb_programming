@@ -3,9 +3,21 @@
 export FLASK_APP=webapp
 export FLASK_ENV=development
 
-if [[ $(id -u) -ne 0 ]] ; then echo "Please run as root" ; exit 1 ; fi
-if ! command -v "pip" >/dev/null 2>&1; then echo 'Pip not installed, please install to use this script'; exit 1;fi
-if [ ! -e setup.py ]; then echo 'No setup.py in root folder...'; exit 1;fi
+if [[ $(id -u) -ne 0 ]]; then
+  echo "Please run as root";
+  exit 1;
+fi
+
+if ! command -v "pip" >/dev/null 2>&1; then
+  echo 'Pip not installed, please install to use this script';
+  exit 1;
+fi
+
+if [ ! -e setup.py ]; then
+  echo 'No setup.py in root folder...';
+  exit 1;
+fi
+
 echo Running pip
 pip install -e .
 echo Running Flask
