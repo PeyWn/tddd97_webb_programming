@@ -8,110 +8,102 @@
  **/
 
 var communication = (function() {
-  var communication = {
-    getRequestPromise: function(url = "/wrong", message = "", method = "PUT") {
-      if (method !== "POST" && method !== "PUT" && method !== "GET") {
-        return { success: false, message: `${method} in not a valid method` };
-      }
+    var communication = {
+	getRequestPromise: function(url = "/wrong", head = [], body = "", method = "PUT") {
+	    if (method !== "POST" && method !== "PUT" && method !== "GET") {
+		return { success: false, body: `${method} in not a valid method` };
+	    }
 
-      xhttp = new XMLHttpRequest();
+	    xhttp = new XMLHttpRequest();
 
-      xhttp.open(method, url, true);
-      xhttp.setRequestHeader("Content-Type", "application/json");
-      console.log("Request method: ", method, typeof method);
-      console.log("Request url: ", url, typeof url);
-      console.log("Request message: ", message, typeof message);
-      xhttp.send(message);
-      console.log("Request sent ", xhttp);
+	    xhttp.open(method, url, true);
+	    xhttp.setRequestHeader("Content-Type", "application/json");
 
-      return new Promise(function(resolve, reject) {
-        xhttp.onreadystatechange = function() {
-          if (this.readyState == 4 && this.status == 200) {
-            console.log("Ready to resolve ", this.responseText);
-            try {
-              resolve(JSON.parse(this.responseText));
-            } catch (error) {
-              reject({
-                success: false,
-                message: `Something went wrong: ${error ? error : "error..."}`
-              });
-            }
-          }
-        };
-      });
-    },
+	    for h in head {
+		xhttp.setRequestHeader(h[0], h[1]);
+	    }
+	    
+	    console.log("Request method: ", method, typeof method);
+	    console.log("Request url: ", url, typeof url);
+	    console.log("Request body: ", body, typeof body);
+	    xhttp.send(body);
+	    console.log("Request sent ", xhttp);	  
 
-    postMessage: function(token, content, toEmail) {
-      return;
-    },
+	    return new Promise(function(resolve, reject) {
+		xhttp.onreadystatechange = function() {
+		    if (this.readyState == 4 && this.status == 200) {
+			console.log("Ready to resolve ", this.responseText);
+			try {
+			    resolve(JSON.parse(this.responseText));
+			} catch (error) {
+			    reject({
+				success: false,
+				message: `Something went wrong: ${error ? error : "error..."}`
+			    });
+			}
+		    }
+		};
+	    });
+	},
 
-    getUserDataByToken: function(token) {
-      return;
-    },
+	postMessage: function(token, content, toEmail) {
+	    return;
+	},
 
-    getUserDataByEmail: function(token, email) {
-      return;
-    },
+	getUserDataByToken: function(token) {
+	    return;
+	},
 
-    getUserMessagesByToken: function(token) {
-      return;
-    },
+	getUserDataByEmail: function(token, email) {
+	    return;
+	},
 
-    getUserMessagesByEmail: function(token, email) {
-      return;
-    },
+	getUserMessagesByToken: function(token) {
+	    return;
+	},
 
-    signIn: function(email, password) {
-      msg = JSON.stringify({
-        email: email,
-        password: password
-      });
-      let response = this.getRequestPromise("/user/signin", msg, "POST");
-      console.log("Communication response from server: ", response);
-      return response
-        ? response
-        : {
-            success: false,
-            message: `No response for server`
-          };
-    },
+	getUserMessagesByEmail: function(token, email) {
+	    return;
+	},
 
-    signOut: function(token) {
-      return;
-    },
+	signIn: function(email, password) {
+	    return this.getRequestPromise(
+		"/user/signin",
+		[],
+		JSON.stringify({
+		    email: email,
+		    password: password
+		}),
+		"POST"
+	    );
+	},
 
-    signUp: function(inputObject) {
-      // {email, password, firstname, familyname, gender, city, country}
-      try {
-        let response = this.getRequestPromise(
-          "/user/signup",
-          JSON.stringify(inputObject),
-          "PUT"
-        );
-        console.log("Communication response from server: ", response);
-        return response
-          ? response
-          : {
-              success: false,
-              message: `No response for server`
-            };
-      } catch (error) {
-        return {
-          success: false,
-          message: `Server response error: ${error}`
-        };
-      }
-    },
+	signOut: function(token) {
+	    return;
+	},
 
-    changePassword: function(token, oldPassword, newPassword) {
-      msg = json.dumps({
-        token: token,
-        oldpassword: oldPassword,
-        newpassword: newPassword
-      });
-      return;
-    }
-  };
+	signUp: function(inputObject) {
+	    // {email, password, firstname, familyname, gender, city, country}
+            return this.getRequestPromise(
+		"/user/signup",
+		[],
+		JSON.stringify(inputObject),
+		"PUT"
+            );
+	},
 
-  return communication;
+	changePassword: function(token, oldPassword, newPassword) {
+	    return this.getRequestPromise(
+		"/user/signup",
+		['Token', token],
+		JSON.stringify({
+		    oldpassword: oldPassword,
+		    newpassword: newPassword
+		}),
+		"PUT"
+	    );	   
+	}
+    };
+
+    return communication;
 })();
