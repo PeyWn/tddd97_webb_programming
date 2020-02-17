@@ -77,7 +77,7 @@ def has_valid_headers(headers):
             not session.has_valid_token(headers['Token']):
         return json.dumps({
             "success": False,
-            "message": "No valid token in request"
+            "data": "No valid token in request"
         })
     return False
 
@@ -94,28 +94,44 @@ def change_password():
     if 'oldpassword' not in data or \
             'newpassword' not in data:
         return json.dumps({"success": False,
-                           "message": "Form data missing or incorrect type."})
+                           "data":  "Form data missing or incorrect type."})
 
     email = session.get_email_by_token(request.headers['token'])
 
     if validate_signin(email, data['oldpassword']) == False:
         return json.dumps({"success": False,
-                           "message": "Old password is incorrect."})
+                           "data":  "Old password is incorrect."})
 
     if not validate_password(data['newpassword']):
         return json.dumps({"success": False,
-                           "message": "Invalid password, must be of length 4 or greater"})
+                           "data":  "Invalid password, must be of length 4 or greater"})
 
     result = webapp.database_handler.change_password(
         session.get_email_by_token(request.headers['token']), data['newpassword'])
 
     if result == True:
         return json.dumps({"success": True,
-                           "message": "Password changed."})
+                           "data":  "Password changed."})
     else:
         return json.dumps({"success": False,
-                           "message": "Something went wrong."})
+                           "data":  "Something went wrong."})
 
+
+@app.route('/user/valid-session', methods=['GET'])
+def valid_session():
+    not_valid = has_valid_headers(request.headers)
+    if not_valid:
+        return not_valid
+    
+    email = session.get_email_by_token(request.headers['Token'])
+
+    if not session.has_valid_session(email):
+        return json.dumps({"success": False,
+                        "data":  "The current session is no longer valid"})
+
+    return json.dumps({"success": True,
+                       "data":  "The current ession is valid"})
+        
 
 @app.route('/user/signout', methods=['PUT'])
 def sign_out():
@@ -126,7 +142,7 @@ def sign_out():
 
     session.end_session(request.headers['Token'])
     return json.dumps({"success": True,
-                       "message": "Successfully signed out."})
+                       "data":  "Successfully signed out."})
 
 
 @app.route('/user/signin', methods=['POST'])
@@ -136,25 +152,25 @@ def sign_in():
     if 'email' not in data or \
             'password' not in data:
         return json.dumps({"success": False,
-                           "message": "Form data missing or incorrect type."})
+                           "data":  "Form data missing or incorrect type."})
 
     user = json.loads(
         webapp.database_handler.get_profile_by_email(data['email']))
 
     if user == False:
         return json.dumps({"success": False,
-                           "message": "User does not exist"})
+                           "data":  "User does not exist"})
 
     if user['password'] == data['password'] and \
             user['email'] == data['email']:
         token = session.create_session(data['email'])
         return json.dumps({"success": True,
-                           "message": "Successfully signed in.",
+                           "data":  "Successfully signed in.",
                            "data": token})
     else:
         return json.dumps({"success": False,
-                           "message": "Wrong username or password."})
-
+                           "data":  "Wrong username or password."})
+    
 
 @app.route('/user/signup', methods=['PUT'])
 def sign_up():
@@ -171,19 +187,19 @@ def sign_up():
             'messages' not in data:
 
         return json.dumps({"success": False,
-                           "message": "Form data missing or incorrect type."})
+                           "data":  "Form data missing or incorrect type."})
 
-    if not validate_password(data['newpassword']):
+    if not validate_password(data['password']):
         return json.dumps({"success": False,
-                           "message": "Invalid password, must be of length 4 or greater"})
+                           "data":  "Invalid password, must be of length 4 or greater"})
 
     result = webapp.database_handler.create_profile(data)
     if result == True:
         return json.dumps({"success": True,
-                           "message": "Successfully created a new user."})
+                           "data":  "Successfully created a new user."})
     else:
         return json.dumps({"success": False,
-                           "message": "Something went wrong."})
+                           "data":  "Something went wrong."})
 
 
 @app.route('/profile/get-by-token', methods=['GET'])
@@ -200,20 +216,13 @@ def get_profile_by_token():
     if profile == False:
         return json.dumps({
             "success": False,
-            "message": "Someting went wrong..."
+            "data": "Someting went wrong..."
         })
 
     profile = json.loads(profile)
-
-    if 'password' not in profile:
-        return json.dumps({
-            "success": False,
-            "message": "Something went wrong."
-        })
-
     del profile['password']
 
-    return json.dumps(profile)
+    return json.dumps({'success': True, 'data': profile})
 
 
 @app.route('/profile/get-by-email', methods=['POST'])
@@ -227,18 +236,19 @@ def get_profile_by_email():
     if 'email' not in data:
         return json.dumps({
             "success": False,
-            "message": "You are not signed in."
+            "data": "You are not signed in."
         })
 
     profile = webapp.database_handler.get_profile_by_email(data['email'])
     if profile == False:
         return json.dumps({
             "success": False,
-            "message": "Someting went wrong..."
+            "data": "Someting went wrong..."
         })
     profile = json.loads(profile)
     del profile['password']
-    return json.dumps(profile)
+
+    return json.dumps({'success': True, 'data': profile})
 
 
 @app.route('/profile/messages-by-token', methods=["GET"])
@@ -249,8 +259,14 @@ def get_messages_by_token():
         return not_valid
 
     email = session.get_email_by_token(request.headers['Token'])
-    messages = webapp.database_handler.get_messages_by_email(email)
-    return messages
+    data = webapp.database_handler.get_messages_by_email(email)
+
+    if data == False:
+        return json.dumps({"success": False,
+                           "data":  "Something went wrong..."})
+
+
+    return json.dumps({'success': True, 'data': data["messages"]})
 
 
 @app.route('/profile/messages-by-email', methods=["POST"])
@@ -264,16 +280,16 @@ def get_messages_by_email():
     if 'email' not in data:
         return json.dumps({
             "success": False,
-            "message": "Wrong data in request"
+            "data": "Wrong data in request"
         })
 
-    result = webapp.database_handler.get_messages_by_email(data['email'])
-    if result == False:
+    data = webapp.database_handler.get_messages_by_email(data['email'])
+
+    if data == False:
         return json.dumps({"success": False,
-                           "message": "Something went wrong..."})
+                           "data":  "Something went wrong..."})
 
-    return json.dumps(result)
-
+    return json.dumps({'success': True, 'data': data["messages"]})
 
 @app.route('/profile/post', methods=['PUT'])
 def post_message_by_email():
@@ -286,18 +302,18 @@ def post_message_by_email():
     if 'email' not in data or \
             'content' not in data:
         return json.dumps({"success": False,
-                           "message": "Form data missing or incorrect type."})
+                           "data":  "Form data missing or incorrect type."})
 
     if not session.has_valid_token(request.headers['token']):
-        return json.dumps({"success": False, "message": "You are not signed in."})
+        return json.dumps({"success": False, "data":  "You are not signed in."})
 
+    writer = session.get_email_by_token(request.headers['Token'])
     result = webapp.database_handler.add_message_by_email(
-        data['email'], data['content'])
+        data['email'], data['content'], writer)
     if result == True:
-        return json.dumps({"success": True, "message": "Message posted"})
+        return json.dumps({"success": True, "data":  "Message posted"})
     else:
-        return json.dumps({"success": False, "message": "Something went wrong..."})
-
+        return json.dumps({"success": False, "data":  "Something went wrong..."})
 
 @app.route('/')
 def root():

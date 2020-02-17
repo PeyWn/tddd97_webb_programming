@@ -51,9 +51,9 @@ var serverstub = (function() {
 		}
 		loggedInUsers[token] = email;
 		persistLoggedInUsers();
-		return {"success": true, "message": "Successfully signed in.", "data": token};
+		return {"success": true, "data":  "Successfully signed in.", "data": token};
 	    } else {
-		return {"success": false, "message": "Wrong username or password."};
+		return {"success": false, "data":  "Wrong username or password."};
 	    }
 	},
 
@@ -69,12 +69,12 @@ var serverstub = (function() {
 		    var message = {"writer": fromEmail, "content": content};
 		    recipient.messages.unshift(message);
 		    persistUsers();
-		    return {"success": true, "message": "Message posted"};
+		    return {"success": true, "data":  "Message posted"};
 		} else {
-		    return {"success": false, "message": "No such user."};
+		    return {"success": false, "data":  "No such user."};
 		}
 	    } else {
-		return {"success": false, "message": "You are not signed in."};
+		return {"success": false, "data":  "You are not signed in."};
 	    }
 	},
 
@@ -91,12 +91,12 @@ var serverstub = (function() {
 		    var match = copyUser(users[email]);
 		    delete match.messages;
 		    delete match.password;
-		    return {"success": true, "message": "User data retrieved.", "data": match};
+		    return {"success": true, "data":  "User data retrieved.", "data": match};
 		} else {
-		    return {"success": false, "message": "No such user."};
+		    return {"success": false, "data":  "No such user."};
 		}
 	    } else {
-		return {"success": false, "message": "You are not signed in."};
+		return {"success": false, "data":  "You are not signed in."};
 	    }
 	},
 
@@ -111,12 +111,12 @@ var serverstub = (function() {
 	    if (loggedInUsers[token] != null){
 		if (users[email] != null) {
 		    var match = copyUser(users[email]).messages;
-		    return {"success": true, "message": "User messages retrieved.", "data": match};
+		    return {"success": true, "data":  "User messages retrieved.", "data": match};
 		} else {
-		    return {"success": false, "message": "No such user."};
+		    return {"success": false, "data":  "No such user."};
 		}
 	    } else {
-		return {"success": false, "message": "You are not signed in."};
+		return {"success": false, "data":  "You are not signed in."};
 	    }
 	},
 
@@ -125,9 +125,9 @@ var serverstub = (function() {
 	    if (loggedInUsers[token] != null){
 		delete loggedInUsers[token];
 		persistLoggedInUsers();
-		return {"success": true, "message": "Successfully signed out."};
+		return {"success": true, "data":  "Successfully signed out."};
 	    } else {
-		return {"success": false, "message": "You are not signed in."};
+		return {"success": false, "data":  "You are not signed in."};
 	    }
 	},
 
@@ -155,13 +155,13 @@ var serverstub = (function() {
 		    };
 		    users[inputObject.email] = user;
 		    persistUsers();
-		    return {"success": true, "message": "Successfully created a new user."};
+		    return {"success": true, "data":  "Successfully created a new user."};
 		} else {
-		    return {"success": false, "message": "Form data missing or incorrect type."};
+		    return {"success": false, "data":  "Form data missing or incorrect type."};
 		}
 
 	    } else {
-		return {"success": false, "message": "User already exists."};
+		return {"success": false, "data":  "User already exists."};
 	    }
 	},
 
@@ -172,12 +172,12 @@ var serverstub = (function() {
 		if (users[email].password == oldPassword){
 		    users[email].password = newPassword;
 		    persistUsers();
-		    return {"success": true, "message": "Password changed."};
+		    return {"success": true, "data":  "Password changed."};
 		} else {
-		    return {"success": false, "message": "Wrong password."};
+		    return {"success": false, "data":  "Wrong password."};
 		}
 	    } else {
-		return {"success": false, "message": "You are not logged in."};
+		return {"success": false, "data":  "You are not logged in."};
 	    }
 	}
     };

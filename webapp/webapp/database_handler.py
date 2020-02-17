@@ -96,7 +96,9 @@ def change_password(email, new_password):
 
 
 def make_dictionary_messages(data_list):
-    dict = {'email': data_list[0], 'messages': ast.literal_eval(data_list[1])}
+    messages = ast.literal_eval(data_list[1])
+    messages.reverse()
+    dict = {'email': data_list[0], 'messages': messages  }
     return dict
 
 
@@ -108,27 +110,27 @@ def get_messages_by_email(email):
 
         data = cursor.fetchall()
         cursor.close()
-
+        if data == []: return False
         return make_dictionary_messages(data[0])
     except Exception as e:
         print("'get_messages_by_email' failed due to ", e)
         return False
 
 
-def add_message_by_email(email, message):
+def add_message_by_email(email, message = '', writer = 'Unknown'):
     try:
         data = get_messages_by_email(email)
 
         if data == False:
             return False
 
-        msg = data['messages']
-        msg.append(message)
-        msg = str(msg)
+        msg_list = data['messages']
+        msg_list.append({'content': message, 'writer': writer})
+        msg_list = str(msg_list)
         get_db().execute("UPDATE messages \
                             SET messages = ? \
                             WHERE email LIKE ?",
-                         [msg, email])
+                         [msg_list, email])
 
         get_db().commit()
         return True

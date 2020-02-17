@@ -20,10 +20,16 @@ function flushPage() {
 /** Profile view (Home page) and browse view
  * Updates wall messages for profile page and browse page
  */
-function renderUserMessages(email = false) {
-  const data =
-    email === false ? getCurrentUserMessages() : getUserMessages(email);
-  if (data) insertMessagesTo(email === false ? "pv-wall" : "bv-wall", data);
+async function renderUserMessages(email = false) {
+  let response;
+  if (email === false) {
+    response = await getCurrentUserMessages();
+  } else {
+    response = await getUserMessages(email);
+  }
+
+  if (response)
+    insertMessagesTo(email === false ? "pv-wall" : "bv-wall", response);
 }
 
 /**
@@ -99,10 +105,11 @@ function getSessionItem(id) {
 /**
  * Checks if the current session has a valid token
  */
-function hasValidToken() {
+async function hasValidToken() {
   const token = getSessionItem("token");
   if (token === false) return false;
-  return true;
+  const response = await communication.hasValidSession(token);
+  return response.success;
 }
 
 /**
@@ -121,7 +128,7 @@ function writeToElement(msg, id) {
  * @param {DOM elem id} id
  * @param {Array of Messages} messages {writer: String, content: String}
  */
-function insertMessagesTo(id, messages) {
+async function insertMessagesTo(id, messages) {
   let infoElem = getElement(id);
   if (infoElem === false) return;
   infoElem.innerHTML = null;
@@ -159,11 +166,14 @@ async function validateLogin(event) {
     return;
   }
 
-  const token = await communication.signIn(fields.username.value, fields.password.value);
-  console.log('Client, signin communication msg ', token)
+  const response = await communication.signIn(
+    fields.username.value,
+    fields.password.value
+  );
+  console.log("Client, signin communication msg ", response);
 
-  if (token.success === true && "data" in token) {
-    window.sessionStorage.setItem("token", token.data);
+  if (response.success === true && "data" in response) {
+    window.sessionStorage.setItem("token", response.data);
     const _msg = `Successfully logged in`;
 
     writeToElement(_msg, msgId);
@@ -213,17 +223,17 @@ async function validateSignUp(event) {
     country: fields.country.value
   };
 
-  let response = await communication.signUp(postMsg)
-  console.log('Client, signup communication msg ', response.message)
+  let response = await communication.signUp(postMsg);
+  console.log("Client, signup communication msg ", response.data);
 
-  writeToElement(response.message, msgId);
+  writeToElement(response.data, msgId);
 }
 
 /* ======= End ======= */
 
 /* ======= Account View ======= */
 
-function changePassword(event) {
+async function changePassword(event) {
   event.preventDefault();
 
   let fields = event.target.elements;
@@ -251,25 +261,26 @@ function changePassword(event) {
     return;
   }
 
-  const serverMsg = serverstub.changePassword(
+  const serverMsg = await communication.changePassword(
     token,
     fields.oldPassword.value,
     fields.newPassword.value
-  ).message;
+  ).data;
 
   writeToElement(serverMsg, msgId);
 }
 
-function signOut(event) {
-  event.preventDefault();
+async function signOut(event) {
+  event && event.preventDefault();
 
   const token = window.sessionStorage.getItem("token");
   if (token === null || typeof token === "undefined") {
     console.warn("Token not found when signing out");
     return;
   }
-  serverstub.signOut(token);
+  await communication.signOut(token);
   flushPage();
+  window.sessionStorage.setItem("token", null);
   changeView("login");
 
   window.sessionStorage.setItem("token", "");
@@ -279,12 +290,14 @@ function signOut(event) {
 
 /* ======= Browse View ======= */
 
-function loadProfileByEmail(email) {
+async function loadProfileByEmail(email) {
   let infoElem = getElement("bv-info");
   if (infoElem === false) return;
   const token = window.sessionStorage.getItem("token");
   if (token === null || typeof token === "undefined") return;
-  const { success, data } = serverstub.getUserDataByEmail(token, email);
+  const response = await communication.getUserDataByEmail(token, email);
+  let success = response.success;
+  let data = response.data;
   if (success) {
     infoElem.innerHTML = `
     <h3>Email: ${data.email}</h3>
@@ -297,19 +310,18 @@ function loadProfileByEmail(email) {
   }
 }
 
-function getUserMessages(email) {
+async function getUserMessages(email) {
   const token = getSessionItem("token");
   if (token === false) return false;
-  const { success, data } = serverstub.getUserMessagesByEmail(token, email);
-  if (!success) return false;
-  return data;
+  const response = await communication.getUserMessagesByEmail(token, email);
+  return response.success ? response.data : false;
 }
 
 /** Browse Tab
  * Loads a profile from backend and displays it on the browse tab
  * @param {*} event
  */
-function renderProfileByEmail(event) {
+async function renderProfileByEmail(event) {
   event.preventDefault();
 
   let fields = event.target.elements;
@@ -324,10 +336,9 @@ function renderProfileByEmail(event) {
     return;
   }
 
-  const messages = getUserMessages(fields.email.value);
-
-  if (messages === false || typeof messages === "undefined") {
-    const _msg = "Could not find a user by that address";
+  let response = await getUserMessages(fields.email.value);
+  if (response === false) {
+    const _msg = 'There is no user with that email';
     writeToElement(_msg, msgId);
     return;
   }
@@ -348,10 +359,9 @@ function renderProfileByEmail(event) {
 			  <p id=${formMsg}></p>
     </form>
       `;
-
   loadProfileByEmail(fields.email.value);
   writeToElement(form, "bv-post");
-  insertMessagesTo("bv-wall", messages);
+  insertMessagesTo("bv-wall", response);
 }
 
 /* ======= End ======= */
@@ -371,12 +381,14 @@ function refreshWall(event) {
   if (item !== false) renderUserMessages(item);
 }
 
-function loadProfileInfo() {
+async function loadProfileInfo() {
   let infoElem = getElement("pv-info");
   if (infoElem === false) return;
   const token = window.sessionStorage.getItem("token");
   if (token === null || typeof token === "undefined") return;
-  const { success, data } = serverstub.getUserDataByToken(token);
+  const response = await communication.getUserDataByToken(token);
+  let success = response.success;
+  let data = response.data;
   if (success) {
     infoElem.innerHTML = `
     <h3>Email: ${data.email}</h3>
@@ -389,15 +401,14 @@ function loadProfileInfo() {
   }
 }
 
-function getCurrentUserMessages() {
+async function getCurrentUserMessages() {
   const token = getSessionItem("token");
   if (token === false) return false;
-  const { success, data } = serverstub.getUserMessagesByToken(token);
-  if (!success) return false;
-  return data;
+  const response = await communication.getUserMessagesByToken(token);
+  return response.success ? response.data : false;
 }
 
-function postToFeed(event, msgId, userEmail = false) {
+async function postToFeed(event, msgId, userEmail = false) {
   event.preventDefault();
 
   let fields = event.target.elements;
@@ -405,8 +416,11 @@ function postToFeed(event, msgId, userEmail = false) {
     fields.feedInput === "" ||
     typeof fields.feedInput === "undefined" ||
     !("value" in fields.feedInput)
-  )
+  ) {
+    console.log("Failed to post due to form error");
     return;
+  }
+  const content = fields.feedInput.value;
 
   const token = getSessionItem("token");
   if (!token) {
@@ -420,10 +434,13 @@ function postToFeed(event, msgId, userEmail = false) {
     window.sessionStorage.setItem(storageId, userEmail);
   }
 
-  const response =
-    userEmail === false
-      ? serverstub.getUserDataByToken(token)
-      : serverstub.getUserDataByEmail(token, userEmail);
+  let response;
+  if (userEmail === false) {
+    response = await communication.getUserDataByToken(token);
+  } else {
+    response = await communication.getUserDataByEmail(token, userEmail);
+  }
+  console.log(response, content);
 
   if (
     typeof response === "undefined" ||
@@ -433,16 +450,16 @@ function postToFeed(event, msgId, userEmail = false) {
     typeof response.data.email === "undefined"
   ) {
     const _msg =
-      "message" in response
-        ? response.message
+      "data" in response
+        ? response.data
         : "User not found when posting on wall";
     writeToElement(_msg, msgId);
     return;
   }
   email = response.data.email;
+  await communication.postMessage(token, content, email);
 
-  serverstub.postMessage(token, fields.feedInput.value, email);
-  renderUserMessages(userEmail);
+  renderUserMessages(userEmail !== false && userEmail);
 }
 
 /* ======= End ======= */
@@ -517,7 +534,7 @@ function changeView(viewName) {
  */
 displayView = function() {
   if (window === null || typeof window === "undefined") return;
-  
+
   const currentView = getSessionItem("CURRENT_VIEW");
   /**
    * If there is no value stored for the 'CURRENT_VIEW', change to welcome welcome view
@@ -538,9 +555,13 @@ displayView = function() {
   if (linkElem !== false) toggleActive(linkElem);
 };
 
-window.onload = function() {
-  if (this.hasValidToken()) {
-    this.renderPage();
-  }
+window.onload = async function() {
+  let isValid = await this.hasValidToken();
+  if (isValid) {
+    this.renderPage();;
+  } else {
+    this.signOut()
+  } 
   this.displayView();
+  
 };
