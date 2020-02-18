@@ -3,6 +3,10 @@ from random import randrange
 import json
 import webapp.database_handler
 from flask import Flask, request
+
+from geventwebsocket.handler import WebSocketHandler
+from gevent.pywsgi import WSGIServer
+
 app = Flask(__name__)
 
 
@@ -12,12 +16,16 @@ class Session:
 
     def get_email_by_token(self, token):
         for email, val in self.__logged_in_users.items():
-            if val == token:
+            if val['token'] == token:
                 return email
         return None
 
     def get_token_by_email(self, email):
-        return self.__logged_in_users[email]
+        return self.__logged_in_users[email]['token']
+
+    def get_connection_by_token(self, token):
+        email = self.get_email_by_token(token)
+        return self.__logged_in_users[email]['socket']
 
     def generate_token(self):
         letters = "abcdefghiklmnopqrstuvwwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
@@ -36,14 +44,23 @@ class Session:
         return False
 
     def has_valid_token(self, token):
-        if token in self.__logged_in_users.values():
-            return True
+        for item in self.__logged_in_users.values():
+            if token == item['token']:
+                return True
         return False
+
+    def add_connection(self, token, socket):
+        email = self.get_email_by_token(token)
+        self.__logged_in_users[email]['socket'] = socket
 
     def create_session(self, email):
         if email:
+            if email in self.__logged_in_users and \
+                    'socket' in self.__logged_in_users[email]:
+                self.__logged_in_users[email]['socket'].close()
+
             token = self.generate_token()
-            self.__logged_in_users[email] = token
+            self.__logged_in_users[email] = {'token': token}
             return token
         return None
 
@@ -72,6 +89,7 @@ def validate_password(password):
         return True
     return False
 
+
 def has_valid_headers(headers):
     if not 'Token' in headers or \
             not session.has_valid_token(headers['Token']):
@@ -80,6 +98,25 @@ def has_valid_headers(headers):
             "data": "No valid token in request"
         })
     return False
+
+
+@app.route('/api/session')
+def socket():
+    print("entered /api/session")
+    try:
+        # if 'wsgi.websocket' in request.environ:
+        ws = request.environ['wsgi.websocket']
+        print(ws)
+        while True:
+            msg = ws.receive()
+            data = json.loads(msg)
+            if 'token' in data['Token']:
+                session.add_connection(data['Token'], ws)
+    except Exception as e:
+        print(e)
+
+    finally:
+        return ''
 
 
 @app.route('/profile/passchange', methods=['PUT'])
@@ -122,16 +159,16 @@ def valid_session():
     not_valid = has_valid_headers(request.headers)
     if not_valid:
         return not_valid
-    
+
     email = session.get_email_by_token(request.headers['Token'])
 
     if not session.has_valid_session(email):
         return json.dumps({"success": False,
-                        "data":  "The current session is no longer valid"})
+                           "data":  "The current session is no longer valid"})
 
     return json.dumps({"success": True,
                        "data":  "The current ession is valid"})
-        
+
 
 @app.route('/user/signout', methods=['PUT'])
 def sign_out():
@@ -170,7 +207,7 @@ def sign_in():
     else:
         return json.dumps({"success": False,
                            "data":  "Wrong username or password."})
-    
+
 
 @app.route('/user/signup', methods=['PUT'])
 def sign_up():
@@ -265,7 +302,6 @@ def get_messages_by_token():
         return json.dumps({"success": False,
                            "data":  "Something went wrong..."})
 
-
     return json.dumps({'success': True, 'data': data["messages"]})
 
 
@@ -291,13 +327,14 @@ def get_messages_by_email():
 
     return json.dumps({'success': True, 'data': data["messages"]})
 
+
 @app.route('/profile/post', methods=['PUT'])
 def post_message_by_email():
 
     not_valid = has_valid_headers(request.headers)
     if not_valid:
         return not_valid
-    
+
     data = request.get_json()
     if 'email' not in data or \
             'content' not in data:
@@ -315,10 +352,12 @@ def post_message_by_email():
     else:
         return json.dumps({"success": False, "data":  "Something went wrong..."})
 
+
 @app.route('/')
 def root():
     return app.send_static_file('client.html')
 
 
 if __name__ == '__main__':
-    app.run()
+    WSGIServer(('127.0.0.1', 5000), app,
+                             handler_class=WebSocketHandler).serve_forever()

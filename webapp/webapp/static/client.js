@@ -64,6 +64,27 @@ function renderPage() {
 
 /* ======= General Helpers ======= */
 
+function session(token) {
+  if ("WebSocket" in window) {
+    const port = "5000";
+    const route = "/api/session";
+    ws = new WebSocket(`ws://${document.domain}:${port}${route}`);
+
+    ws.onopen = function() {
+      const msg = JSON.stringify({
+        Token: token
+      });
+      ws.send(msg);
+    };
+    ws.onclose = function() {
+      signOut();
+    };
+  } else {
+    console.warn("WebSocket not supported");
+  }
+  return;
+}
+
 /**
  * Helper function fetching element and performing error check
  * id : Id of the element to fetch
@@ -105,11 +126,11 @@ function getSessionItem(id) {
 /**
  * Checks if the current session has a valid token
  */
-async function hasValidToken() {
+function hasValidToken() {
   const token = getSessionItem("token");
   if (token === false) return false;
-  const response = await communication.hasValidSession(token);
-  return response.success;
+  // const response = await communication.hasValidSession(token);
+  return true;
 }
 
 /**
@@ -132,6 +153,7 @@ async function insertMessagesTo(id, messages) {
   let infoElem = getElement(id);
   if (infoElem === false) return;
   infoElem.innerHTML = null;
+  messages = messages.reverse();
   messages.forEach(msg => {
     infoElem.innerHTML += `
       <div class='Msg'>
@@ -170,21 +192,22 @@ async function validateLogin(event) {
     fields.username.value,
     fields.password.value
   );
-  console.log("Client, signin communication msg ", response);
 
+  let _msg = "";
   if (response.success === true && "data" in response) {
     window.sessionStorage.setItem("token", response.data);
-    const _msg = `Successfully logged in`;
 
-    writeToElement(_msg, msgId);
+    session(response.data);
+
+    _msg = `Successfully logged in`;
+
     renderPage();
     changeView("profile");
   } else {
-    const _msg = `Failed to log in`;
+    _msg = `Failed to log in`;
     console.warn(_msg);
-
-    writeToElement(_msg, msgId);
   }
+  writeToElement(_msg, msgId);
 }
 
 function validatePassLength(password) {
@@ -224,7 +247,6 @@ async function validateSignUp(event) {
   };
 
   let response = await communication.signUp(postMsg);
-  console.log("Client, signup communication msg ", response.data);
 
   writeToElement(response.data, msgId);
 }
@@ -265,9 +287,9 @@ async function changePassword(event) {
     token,
     fields.oldPassword.value,
     fields.newPassword.value
-  ).data;
+  );
 
-  writeToElement(serverMsg, msgId);
+  writeToElement(serverMsg.data, msgId);
 }
 
 async function signOut(event) {
@@ -282,7 +304,6 @@ async function signOut(event) {
   flushPage();
   window.sessionStorage.setItem("token", null);
   changeView("login");
-
   window.sessionStorage.setItem("token", "");
 }
 
@@ -338,7 +359,7 @@ async function renderProfileByEmail(event) {
 
   let response = await getUserMessages(fields.email.value);
   if (response === false) {
-    const _msg = 'There is no user with that email';
+    const _msg = "There is no user with that email";
     writeToElement(_msg, msgId);
     return;
   }
@@ -377,7 +398,6 @@ function refreshWall(event) {
     return;
   }
   const item = getSessionItem("bv-user-email");
-  console.log(item);
   if (item !== false) renderUserMessages(item);
 }
 
@@ -440,7 +460,6 @@ async function postToFeed(event, msgId, userEmail = false) {
   } else {
     response = await communication.getUserDataByEmail(token, userEmail);
   }
-  console.log(response, content);
 
   if (
     typeof response === "undefined" ||
@@ -555,13 +574,12 @@ displayView = function() {
   if (linkElem !== false) toggleActive(linkElem);
 };
 
-window.onload = async function() {
-  let isValid = await this.hasValidToken();
+window.onload = function() {
+  let isValid = this.hasValidToken();
   if (isValid) {
-    this.renderPage();;
+    this.renderPage();
+    this.displayView();
   } else {
-    this.signOut()
-  } 
-  this.displayView();
-  
+    this.signOut();
+  }
 };

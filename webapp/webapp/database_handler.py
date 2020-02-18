@@ -96,9 +96,7 @@ def change_password(email, new_password):
 
 
 def make_dictionary_messages(data_list):
-    messages = ast.literal_eval(data_list[1])
-    messages.reverse()
-    dict = {'email': data_list[0], 'messages': messages  }
+    dict = {'email': data_list[0], 'messages': ast.literal_eval(data_list[1])}
     return dict
 
 

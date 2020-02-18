@@ -145,7 +145,7 @@ var communication = (function() {
 
     changePassword: function(token, oldPassword, newPassword) {
       return this.getRequestPromise(
-        "/user/signup",
+        "/profile/passchange",
         [["Token", token]],
         JSON.stringify({
           oldpassword: oldPassword,
