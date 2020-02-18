@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 from random import randrange
 import json
-import webapp.database_handler
+import database_handler
 from flask import Flask, request
 
 from geventwebsocket.handler import WebSocketHandler
 from gevent.pywsgi import WSGIServer
 
 app = Flask(__name__)
-
 
 class Session:
     def __init__(self):
@@ -78,7 +77,7 @@ session = Session()
 
 
 def validate_signin(email, password):
-    data = json.loads(webapp.database_handler.get_profile_by_email(email))
+    data = json.loads(database_handler.get_profile_by_email(email))
     if 'password' in data and data['password'] == password:
         return True
     return False
@@ -102,21 +101,20 @@ def has_valid_headers(headers):
 
 @app.route('/api/session')
 def socket():
-    print("entered /api/session")
-    try:
-        # if 'wsgi.websocket' in request.environ:
-        ws = request.environ['wsgi.websocket']
-        print(ws)
-        while True:
-            msg = ws.receive()
-            data = json.loads(msg)
-            if 'token' in data['Token']:
-                session.add_connection(data['Token'], ws)
-    except Exception as e:
-        print(e)
+    if not request.environ.get('wsgi.websocket'): 
+        print('No request environ get socket')
+        return 
+    
+    ws = request.environ['wsgi.websocket']
+    msg = ws.receive()
+    data = json.loads(msg)
 
-    finally:
-        return ''
+    if 'Token' in data:
+        session.add_connection(data['Token'], ws)
+
+    while True:
+          ws.receive()
+    return
 
 
 @app.route('/profile/passchange', methods=['PUT'])
@@ -143,7 +141,7 @@ def change_password():
         return json.dumps({"success": False,
                            "data":  "Invalid password, must be of length 4 or greater"})
 
-    result = webapp.database_handler.change_password(
+    result = database_handler.change_password(
         session.get_email_by_token(request.headers['token']), data['newpassword'])
 
     if result == True:
@@ -192,7 +190,8 @@ def sign_in():
                            "data":  "Form data missing or incorrect type."})
 
     user = json.loads(
-        webapp.database_handler.get_profile_by_email(data['email']))
+        database_handler.get_profile_by_email(data['email'])
+        )
 
     if user == False:
         return json.dumps({"success": False,
@@ -230,7 +229,7 @@ def sign_up():
         return json.dumps({"success": False,
                            "data":  "Invalid password, must be of length 4 or greater"})
 
-    result = webapp.database_handler.create_profile(data)
+    result = database_handler.create_profile(data)
     if result == True:
         return json.dumps({"success": True,
                            "data":  "Successfully created a new user."})
@@ -248,7 +247,7 @@ def get_profile_by_token():
 
     email = session.get_email_by_token(request.headers['Token'])
 
-    profile = webapp.database_handler.get_profile_by_email(email)
+    profile = database_handler.get_profile_by_email(email)
 
     if profile == False:
         return json.dumps({
@@ -276,7 +275,7 @@ def get_profile_by_email():
             "data": "You are not signed in."
         })
 
-    profile = webapp.database_handler.get_profile_by_email(data['email'])
+    profile = database_handler.get_profile_by_email(data['email'])
     if profile == False:
         return json.dumps({
             "success": False,
@@ -296,7 +295,7 @@ def get_messages_by_token():
         return not_valid
 
     email = session.get_email_by_token(request.headers['Token'])
-    data = webapp.database_handler.get_messages_by_email(email)
+    data = database_handler.get_messages_by_email(email)
 
     if data == False:
         return json.dumps({"success": False,
@@ -319,7 +318,7 @@ def get_messages_by_email():
             "data": "Wrong data in request"
         })
 
-    data = webapp.database_handler.get_messages_by_email(data['email'])
+    data = database_handler.get_messages_by_email(data['email'])
 
     if data == False:
         return json.dumps({"success": False,
@@ -345,7 +344,7 @@ def post_message_by_email():
         return json.dumps({"success": False, "data":  "You are not signed in."})
 
     writer = session.get_email_by_token(request.headers['Token'])
-    result = webapp.database_handler.add_message_by_email(
+    result = database_handler.add_message_by_email(
         data['email'], data['content'], writer)
     if result == True:
         return json.dumps({"success": True, "data":  "Message posted"})
@@ -359,5 +358,5 @@ def root():
 
 
 if __name__ == '__main__':
-    WSGIServer(('127.0.0.1', 5000), app,
-                             handler_class=WebSocketHandler).serve_forever()
+    server = WSGIServer(('127.0.0.1', 5000), app, handler_class=WebSocketHandler)
+    server.serve_forever()

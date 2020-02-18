@@ -19,6 +19,6 @@ if [ ! -e setup.py ]; then
 fi
 
 echo Running pip
-pip install -e .
+pip3 install -e .
 echo Running Flask
 flask run

@@ -578,8 +578,6 @@ window.onload = function() {
   let isValid = this.hasValidToken();
   if (isValid) {
     this.renderPage();
-    this.displayView();
-  } else {
-    this.signOut();
   }
+  this.displayView();
 };
