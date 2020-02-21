@@ -65,6 +65,7 @@ function renderPage() {
 /* ======= General Helpers ======= */
 
 function session(token) {
+  // TODO refresh
   if ("WebSocket" in window) {
     const port = "5000";
     const route = "/api/session";
@@ -126,11 +127,12 @@ function getSessionItem(id) {
 /**
  * Checks if the current session has a valid token
  */
-function hasValidToken() {
+async function hasValidToken() {
   const token = getSessionItem("token");
   if (token === false) return false;
-  // const response = await communication.hasValidSession(token);
-  return true;
+  const response = await communication.hasValidSession(token);
+  if (!("success" in response)) return false;
+  return response.success;
 }
 
 /**
@@ -574,10 +576,14 @@ displayView = function() {
   if (linkElem !== false) toggleActive(linkElem);
 };
 
-window.onload = function() {
-  let isValid = this.hasValidToken();
+window.onload = async function() {
+  let isValid = await this.hasValidToken();
   if (isValid) {
+    const token = getSessionItem("token");  
+    this.session(token);
     this.renderPage();
+  } else {
+    this.signOut();
   }
   this.displayView();
 };

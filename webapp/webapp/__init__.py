@@ -101,20 +101,22 @@ def has_valid_headers(headers):
 
 @app.route('/api/session')
 def socket():
-    if not request.environ.get('wsgi.websocket'): 
+    if not request.environ.get('wsgi.websocket'):
         print('No request environ get socket')
-        return 
-    
-    ws = request.environ['wsgi.websocket']
-    msg = ws.receive()
-    data = json.loads(msg)
+        return ''
+    try:
+        ws = request.environ['wsgi.websocket']
+        msg = ws.receive()
+        data = json.loads(msg)
 
-    if 'Token' in data:
-        session.add_connection(data['Token'], ws)
+        if 'Token' in data:
+            session.add_connection(data['Token'], ws)
 
-    while True:
-          ws.receive()
-    return
+        while True:
+              ws.receive()
+    except:
+        pass
+    return ''
 
 
 @app.route('/profile/passchange', methods=['PUT'])
