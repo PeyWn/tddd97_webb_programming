@@ -6,8 +6,10 @@ setup(
     include_package_data=True,
     install_requires=[
         'flask',
-        'websocket-client',
+        'flask-socketio',
         'gevent',
-        'gevent-websocket'
+        'eventlet',
+        #'gevent-websocket'
+        #'websocket-client',
     ],
 )

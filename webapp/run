@@ -3,10 +3,10 @@
 export FLASK_APP=webapp
 export FLASK_ENV=development
 
-if [[ $(id -u) -ne 0 ]]; then
-  echo "Please run as root";
-  exit 1;
-fi
+#if [[ $(id -u) -ne 0 ]]; then
+#  echo "Please run as root";
+#  exit 1;
+#fi
 
 if ! command -v "pip" >/dev/null 2>&1; then
   echo 'Pip not installed, please install to use this script';
@@ -18,7 +18,14 @@ if [ ! -e setup.py ]; then
   exit 1;
 fi
 
+if [ ! -d venv ]; then
+  echo Setup venv
+  python3 -m venv venv
+fi
+echo Changing env
+source venv/bin/activate
 echo Running pip
-pip3 install -e .
+pip3 install .
 echo Running Flask
-flask run
+#flask run 
+python3 webapp/__init__.py
