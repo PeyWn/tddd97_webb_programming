@@ -1,6 +1,6 @@
 create table profile(
        email varchar(200),
-       password varchar(100),
+       password blob(100),
        firstName varchar(40),
        familyName varchar(40),
        gender varchar(20),

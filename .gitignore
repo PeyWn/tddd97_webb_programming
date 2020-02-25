@@ -274,3 +274,5 @@ dist/
 tmp/
 temp/
 tags
+venv/
+

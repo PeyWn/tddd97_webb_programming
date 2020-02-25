@@ -3,12 +3,13 @@ from random import randrange
 import json
 import database_handler
 from flask import Flask, request
-from flask.ext.bcrypt import Bcrypt
+from flask_bcrypt import Bcrypt
 
 from geventwebsocket.handler import WebSocketHandler
 from gevent.pywsgi import WSGIServer
 
 app = Flask(__name__)
+bcrypt = Bcrypt(app)
 
 class Session:
     def __init__(self):
@@ -78,8 +79,8 @@ session = Session()
 
 
 def validate_signin(email, password):
-    data = json.loads(database_handler.get_profile_by_email(email))
-    if 'password' in data and data['password'] == password:
+    data = database_handler.get_profile_by_email(email)
+    if 'password' in data and bcrypt.check_password_hash(data['password'], password):
         return True
     return False
 
@@ -115,7 +116,8 @@ def socket():
 
         while True:
               ws.receive()
-    except:
+    except Exception as e:
+        print("Websocket crashed: ", e)
         pass
     return ''
 
@@ -144,8 +146,10 @@ def change_password():
         return json.dumps({"success": False,
                            "data":  "Invalid password, must be of length 4 or greater"})
 
+    data['password'] = bcrypt.generate_password_hash(data['password'])
+
     result = database_handler.change_password(
-        session.get_email_by_token(request.headers['token']), data['newpassword'])
+        session.get_email_by_token(request.headers['token']), data)
 
     if result == True:
         return json.dumps({"success": True,
@@ -192,15 +196,13 @@ def sign_in():
         return json.dumps({"success": False,
                            "data":  "Form data missing or incorrect type."})
 
-    user = json.loads(
-        database_handler.get_profile_by_email(data['email'])
-        )
-
+    user = database_handler.get_profile_by_email(data['email'])
+        
     if user == False:
         return json.dumps({"success": False,
                            "data":  "User does not exist"})
 
-    if user['password'] == data['password'] and \
+    if bcrypt.check_password_hash(user['password'], data['password']) and \
             user['email'] == data['email']:
         token = session.create_session(data['email'])
         return json.dumps({"success": True,
@@ -232,6 +234,9 @@ def sign_up():
         return json.dumps({"success": False,
                            "data":  "Invalid password, must be of length 4 or greater"})
 
+    pw_hash = bcrypt.generate_password_hash(data['password'])
+    data['password'] = pw_hash
+
     result = database_handler.create_profile(data)
     if result == True:
         return json.dumps({"success": True,
@@ -258,7 +263,6 @@ def get_profile_by_token():
             "data": "Someting went wrong..."
         })
 
-    profile = json.loads(profile)
     del profile['password']
 
     return json.dumps({'success': True, 'data': profile})
@@ -284,7 +288,6 @@ def get_profile_by_email():
             "success": False,
             "data": "Someting went wrong..."
         })
-    profile = json.loads(profile)
     del profile['password']
 
     return json.dumps({'success': True, 'data': profile})

@@ -7,7 +7,7 @@ import ast
 def get_db():
     db = getattr(g, 'db', None)
     if db is None:
-        db = g.db = sqlite3.connect('database.db')
+        db = g.db = sqlite3.connect('src/webapp/database.db')
     return db
 
 
@@ -64,6 +64,7 @@ def make_dictionary_profile(data_list):
 
 
 def get_profile_by_email(email):
+    print('Email type ', email, ': ', type(email))
     try:
         cursor = get_db().execute(
             'SELECT * FROM profile WHERE email LIKE ?', [email])
@@ -74,10 +75,10 @@ def get_profile_by_email(email):
             print("'get_profile_by_email' failed, got no data from database")
             return False
 
-        return json.dumps(make_dictionary_profile(data[0]))
+        return make_dictionary_profile(data[0])
 
-    except:
-        print("'get_profile_by_email' failed")
+    except Exception as e:
+        print("'get_profile_by_email' failed: ", e)
         return False
 
 
