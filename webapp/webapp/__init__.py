@@ -3,6 +3,7 @@ from random import randrange
 import json
 import database_handler
 from flask import Flask, request
+from flask.ext.bcrypt import Bcrypt
 
 from geventwebsocket.handler import WebSocketHandler
 from gevent.pywsgi import WSGIServer
