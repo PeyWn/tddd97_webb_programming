@@ -5,7 +5,6 @@
     <link href= "static/client.css" type="text/css" rel="stylesheet">
     <script src="static/client.js" type="text/javascript"></script>
 	<script src="static/serverstub.js" type="text/javascript"></script>
-	<script src="static/communication.js" type="text/javascript"></script>
 	<script id="load-layout-navbar" type="text/view">
 		<div class="NavBar">
 			<h2 id='nav-profile' onclick="changeView('profile');  return false">Home</h2>
@@ -18,7 +17,7 @@
 			<div class="LV Logo">
 			  <img class="Image" src="static/wimage.png" alt="logo of dooom" />
 			</div>
-		  
+
 			<div class="LV Column">
 			  <div class="LV Login">
 				<form
@@ -39,7 +38,7 @@
 				  <p id="LV-Login-Form-Message"></p>
 				</form>
 			  </div>
-		  
+
 			  <div class="LV Signup">
 				<form
 				  name="SignUpForm"
@@ -81,7 +80,7 @@
 					<form
 					name="FeedForm"
 					onsubmit="postToFeed(event, 'PV-Submit-msg'); this.reset(); return false;">
-  
+
 						<p>Enter post:</p>
 						<textarea name="feedInput" required></textarea>
 						<div>
@@ -89,27 +88,27 @@
 							<button onclick="refreshWall(event); return false">Refresh</button>
 						</div>
 						<p id="PV-Submit-msg"></p>
-						
+
 					</form>
 				</div>
 				<div id='pv-wall' class="Wall"></div>
 			  </div>
 		  <div id='pv-info' class='Info'></div>
 		</div>
-  
+
 	</script>
 
 	<script id="load-browse-view" type=”text/view”>
 		<div class="Browse">
 		<form
 		name="GetWallForm"
-		onsubmit="renderProfileByEmail(event); return false;"			
+		onsubmit="renderProfileByEmail(event); return false;"
 		>
 			<p>Enter user email:</p>
 			<input type="text" name="email" required>
 			<button class="BtnPost" type="submit">Submit</button>
 			<p id="BV-load-profile-form-message">
-		</form>		
+		</form>
 
 		<div class="Column">
 			<div id='bv-post'></div>
@@ -132,10 +131,10 @@
     <input type="password" name="newPassword" required>
     <p>Repeat password:</p>
     <input type="password" name="newPassword2" required>
-    
+
     <button class="Btn1" type="submit">Submit</button>
     <p id="AV-change-Form-Message"></p>
-    
+
 	  </form>
 
     <div class="AV logOutbtn">
@@ -143,7 +142,7 @@
     </div>
 	</script>
 	</head>
-  <body>    
+  <body>
 	  <div id='layout-navbar' class='Layout'></div>
 	  <div id="login-view" class="View" ></div>
 	  <div id="profile-view" class="View" ></div>

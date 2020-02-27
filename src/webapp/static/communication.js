@@ -7,154 +7,176 @@
  *  the description of how it works is in the lab instructions.
  **/
 
-var communication = (function() {
-  var communication = {
-    getRequestPromise: function(
-      url = "/wrong",
-      head = [],
-      body = "",
-      method = "PUT"
-    ) {
-      if (method !== "POST" && method !== "PUT" && method !== "GET") {
-        return { success: false, body: `${method} in not a valid method` };
-      }
+// function this.transmission(data) {
+//   const email = window.sessionStorage.getItem("email");
+//   const hmac = hmacSHA512(JSON.stringify(data), email);
+//   data.push({
+//     key: "hmac",
+//     value: hmac
+//   });
+//   return JSON.stringify(data);
+// }
+import hmacSHA512 from "crypto-js/hmac-sha512";
 
-      xhttp = new XMLHttpRequest();
+// var communication = (function() {
+//   var communication = {
+class Communication {
+  constructor() {}
+  transmission(data) {
+    const email = window.sessionStorage.getItem("email");
+    const hmac = hmacSHA512(JSON.stringify(data), email);
+    data.push({
+      key: "hmac",
+      value: hmac
+    });
+    return JSON.stringify(data);
+  }
 
-      xhttp.open(method, url, true);
-      xhttp.setRequestHeader("Content-Type", "application/JSON");
-
-      head.forEach(h => {
-        xhttp.setRequestHeader(h[0], h[1]);
-      });
-
-      //console.log("Request method: ", method, typeof method);
-      //console.log("Request url: ", url, typeof url);
-      //console.log("Request body: ", body, typeof body);
-      xhttp.send(body);
-      //console.log("Request sent ", xhttp);
-
-      return new Promise(function(resolve, reject) {
-        xhttp.onreadystatechange = function() {
-          if (this.readyState == 4 && this.status == 200) {
-            // console.log("Ready to resolve ", this.responseText);
-            try {
-              resolve(JSON.parse(this.responseText));
-            } catch (error) {
-              reject({
-                success: false,
-                message: `Something went wrong: ${error ? error : "error..."}`
-              });
-            }
-          }
-        };
-      });
-    },
-
-    postMessage: function(token, sendContent, toEmail) {
-      return this.getRequestPromise(
-        "/profile/post",
-        [["Token", token]],
-        JSON.stringify({
-          content: sendContent,
-          email: toEmail
-        }),
-        "PUT"
-      );
-    },
-
-    getUserDataByToken: function(token) {
-      return this.getRequestPromise(
-        "/profile/get-by-token",
-        [["Token", token]],
-        JSON.stringify({}),
-        "GET"
-      );
-    },
-
-    getUserDataByEmail: function(token, userEmail) {
-      return this.getRequestPromise(
-        "/profile/get-by-email",
-        [["Token", token]],
-        JSON.stringify({
-          email: userEmail
-        }),
-        "POST"
-      );
-    },
-
-    getUserMessagesByToken: function(token) {
-      return this.getRequestPromise(
-        "/profile/messages-by-token",
-        [["Token", token]],
-        JSON.stringify({}),
-        "GET"
-      );
-    },
-
-    getUserMessagesByEmail: function(token, fromEmail) {
-      return this.getRequestPromise(
-        "/profile/messages-by-email",
-        [["Token", token]],
-        JSON.stringify({
-          email: fromEmail
-        }),
-        "POST"
-      );
-    },
-
-    hasValidSession: function(token) {
-      return this.getRequestPromise(
-        "/user/valid-session",
-        [["Token", token]],
-        "",
-        "GET"
-      );
-    },
-
-    signIn: function(email, password) {
-      return this.getRequestPromise(
-        "/user/signin",
-        [[]],
-        JSON.stringify({
-          email: email,
-          password: password
-        }),
-        "POST"
-      );
-    },
-
-    signOut: function(token) {
-      return this.getRequestPromise(
-        "/user/signout",
-        [["Token", token]],
-        "",
-        "PUT"
-      );
-    },
-
-    signUp: function(inputObject) {
-      // {email, password, firstname, familyname, gender, city, country}
-      return this.getRequestPromise(
-        "/user/signup",
-        [[]],
-        JSON.stringify(inputObject),
-        "PUT"
-      );
-    },
-
-    changePassword: function(token, oldPassword, newPassword) {
-      return this.getRequestPromise(
-        "/profile/passchange",
-        [["Token", token]],
-        JSON.stringify({
-          oldpassword: oldPassword,
-          newpassword: newPassword
-        }),
-        "PUT"
-      );
+  getRequestPromise(url = "/wrong", head = [], body = "", method = "PUT") {
+    if (method !== "POST" && method !== "PUT" && method !== "GET") {
+      return { success: false, body: `${method} in not a valid method` };
     }
-  };
 
-  return communication;
-})();
+    xhttp = new XMLHttpRequest();
+
+    xhttp.open(method, url, true);
+    xhttp.setRequestHeader("Content-Type", "application/JSON");
+
+    head.forEach(h => {
+      xhttp.setRequestHeader(h[0], h[1]);
+    });
+
+    //console.log("Request method: ", method, typeof method);
+    //console.log("Request url: ", url, typeof url);
+    //console.log("Request body: ", body, typeof body);
+    xhttp.send(body);
+    //console.log("Request sent ", xhttp);
+
+    return new Promise(function(resolve, reject) {
+      xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+          // console.log("Ready to resolve ", this.responseText);
+          try {
+            resolve(JSON.parse(this.responseText));
+          } catch (error) {
+            reject({
+              success: false,
+              message: `Something went wrong: ${error ? error : "error..."}`
+            });
+          }
+        }
+      };
+    });
+  }
+
+  postMessage(token, sendContent, toEmail) {
+    return this.getRequestPromise(
+      "/profile/post",
+      [["Token", token]],
+      this.transmission({
+        content: sendContent,
+        email: toEmail
+      }),
+      "PUT"
+    );
+  }
+
+  getUserDataByToken(token) {
+    return this.getRequestPromise(
+      "/profile/get-by-token",
+      [["Token", token]],
+      this.transmission({}),
+      "GET"
+    );
+  }
+
+  getUserDataByEmail(token, userEmail) {
+    return this.getRequestPromise(
+      "/profile/get-by-email",
+      [["Token", token]],
+      this.transmission({
+        email: userEmail
+      }),
+      "POST"
+    );
+  }
+
+  getUserMessagesByToken(token) {
+    return this.getRequestPromise(
+      "/profile/messages-by-token",
+      [["Token", token]],
+      this.transmission({}),
+      "GET"
+    );
+  }
+
+  getUserMessagesByEmail(token, fromEmail) {
+    return this.getRequestPromise(
+      "/profile/messages-by-email",
+      [["Token", token]],
+      this.transmission({
+        email: fromEmail
+      }),
+      "POST"
+    );
+  }
+
+  hasValidSession(token) {
+    return this.getRequestPromise(
+      "/user/valid-session",
+      [["Token", token]],
+      "",
+      "GET"
+    );
+  }
+
+  signIn(email, password) {
+    return this.getRequestPromise(
+      "/user/signin",
+      [[]],
+      this.transmission({
+        email: email,
+        password: password
+      }),
+      "POST"
+    );
+  }
+
+  signOut(token) {
+    return this.getRequestPromise(
+      "/user/signout",
+      [["Token", token]],
+      "",
+      "PUT"
+    );
+  }
+
+  signUp(inputObject) {
+    // {email, password, firstname, familyname, gender, city, country}
+    return this.getRequestPromise(
+      "/user/signup",
+      [[]],
+      this.transmission(inputObject),
+      "PUT"
+    );
+  }
+
+  changePassword(token, oldPassword, newPassword) {
+    return this.getRequestPromise(
+      "/profile/passchange",
+      [["Token", token]],
+      this.transmission({
+        oldpassword: oldPassword,
+        newpassword: newPassword
+      }),
+      "PUT"
+    );
+  }
+}
+
+var communication = new Communication();
+
+export default communication;
+//
+//   return communication;
+// })();

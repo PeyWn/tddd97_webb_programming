@@ -1,6 +1,7 @@
+import communication from "communication";
 /* ======= Render Page ======= */
 
-function flushPage() {
+export function flushPage() {
   for (view in views) {
     if (view !== "login") {
       let bodyElem = getElement(views[view].body);
@@ -62,36 +63,33 @@ function renderPage() {
 
 /* ======= End ======= */
 
-
 /* ======= Crypto Helpers ======= */
 
-async function genKeys(){
-  if ('crypto' in window){
-    window.crypto.subtle.generateKey(
-      {
+async function genKeys() {
+  if ("crypto" in window) {
+    window.crypto.subtle
+      .generateKey(
+        {
           name: "RSA-OAEP",
           modulusLength: 2048, //can be 1024, 2048, or 4096
           publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
-          hash: {name: "SHA-256"}, //can be "SHA-1", "SHA-256", "SHA-384", or "SHA-512"
-      },
-      false, //whether the key is extractable (i.e. can be used in exportKey)
-      ["encrypt", "decrypt"] //must be ["encrypt", "decrypt"] or ["wrapKey", "unwrapKey"]
-  )
-  .then(function(keyPair){
-      //returns a keypair object
-      console.log(keyPair);
-      console.log(keyPair.publicKey);
-      console.log(keyPair.privateKey);
-      window.sessionStorage.setItem('KEYS', keyPair)
-      
-    })
-  .catch(function(err){
-      console.error(err);
-  });
+          hash: { name: "SHA-256" } //can be "SHA-1", "SHA-256", "SHA-384", or "SHA-512"
+        },
+        false, //whether the key is extractable (i.e. can be used in exportKey)
+        ["encrypt", "decrypt"] //must be ["encrypt", "decrypt"] or ["wrapKey", "unwrapKey"]
+      )
+      .then(function(keyPair) {
+        //returns a keypair object
+        console.log(keyPair);
+        console.log(keyPair.publicKey);
+        console.log(keyPair.privateKey);
+        window.sessionStorage.setItem("KEYS", keyPair);
+      })
+      .catch(function(err) {
+        console.error(err);
+      });
   }
 }
-
-async function 
 
 /* ======= End ======= */
 
@@ -231,6 +229,7 @@ async function validateLogin(event) {
   let _msg = "";
   if (response.success === true && "data" in response) {
     window.sessionStorage.setItem("token", response.data);
+    window.sessionStorage.setItem("email", fields.username.value);
 
     session(response.data);
 
@@ -612,7 +611,7 @@ displayView = function() {
 window.onload = async function() {
   let isValid = await this.hasValidToken();
   if (isValid) {
-    const token = getSessionItem("token");  
+    const token = getSessionItem("token");
     this.session(token);
     this.renderPage();
   } else {
