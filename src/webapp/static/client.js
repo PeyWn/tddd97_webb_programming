@@ -1,7 +1,6 @@
-import communication from "communication";
 /* ======= Render Page ======= */
 
-export function flushPage() {
+function flushPage() {
   for (view in views) {
     if (view !== "login") {
       let bodyElem = getElement(views[view].body);

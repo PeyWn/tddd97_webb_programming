@@ -16,7 +16,7 @@
 //   });
 //   return JSON.stringify(data);
 // }
-import hmacSHA512 from "crypto-js/hmac-sha512";
+// import hmacSHA512 from "crypto-js/hmac-sha512";
 
 // var communication = (function() {
 //   var communication = {
@@ -24,7 +24,9 @@ class Communication {
   constructor() {}
   transmission(data) {
     const email = window.sessionStorage.getItem("email");
-    const hmac = hmacSHA512(JSON.stringify(data), email);
+    // const hmac = CryptoJS.HmacSHA512(JSON.stringify(data), email);
+    const hmac = CryptoJS.HmacSHA512("Hej", "woop");
+
     data.push({
       key: "hmac",
       value: hmac
@@ -174,9 +176,8 @@ class Communication {
   }
 }
 
-var communication = new Communication();
+window.communication = new Communication();
 
-export default communication;
 //
 //   return communication;
 // })();
