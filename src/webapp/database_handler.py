@@ -7,7 +7,7 @@ import ast
 def get_db():
     db = getattr(g, 'db', None)
     if db is None:
-        db = g.db = sqlite3.connect('src/webapp/database.db')
+        db = g.db = sqlite3.connect('./database.db')
     return db
 
 

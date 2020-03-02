@@ -219,6 +219,8 @@ async function validateLogin(event) {
     writeToElement(_msg, msgId);
     return;
   }
+  
+  window.sessionStorage.setItem("email", fields.username.value);
 
   const response = await communication.signIn(
     fields.username.value,
@@ -228,7 +230,6 @@ async function validateLogin(event) {
   let _msg = "";
   if (response.success === true && "data" in response) {
     window.sessionStorage.setItem("token", response.data);
-    window.sessionStorage.setItem("email", fields.username.value);
 
     session(response.data);
 

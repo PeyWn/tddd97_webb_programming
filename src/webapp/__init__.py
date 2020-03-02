@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
-from random import randrange
 import json
-import database_handler
-from session import new_session
 
 from flask import Flask, request
 from flask_bcrypt import Bcrypt
@@ -10,9 +7,15 @@ from flask_bcrypt import Bcrypt
 from geventwebsocket.handler import WebSocketHandler
 from gevent.pywsgi import WSGIServer
 
+import hashlib
+import base64
+import hmac
+
+import database_handler
+from session import new_session
+
 app = Flask(__name__)
 bcrypt = Bcrypt(app)
-
 
 
 global session
@@ -39,7 +42,32 @@ def has_valid_headers(headers):
             "success": False,
             "data": "No valid token in request"
         })
-    return False
+    return
+
+
+def validate_data(request):
+    not_valid = has_valid_headers(request.headers)
+    if not_valid:
+        return False, not_valid
+
+    data = request.get_json()
+    email = session.get_email_by_token(request.headers['Token'])
+
+    orig_hmac = data['hmac']
+    del data['hmac']
+
+    signature = json.dumps(data).replace(" ", "").encode('utf-8')
+    secret_key = email.encode('utf-8')
+
+    local_hmac = hmac.new(secret_key, signature, "sha512").hexdigest()
+    
+    if hmac.compare_digest(local_hmac, orig_hmac):
+        return True, data
+
+    return False, json.dumps({
+        "success": False,
+        "data": "HMAC does not match"
+    })
 
 
 @app.route('/api/session')
@@ -56,7 +84,7 @@ def socket():
             session.add_connection(data['Token'], ws)
 
         while True:
-              ws.receive()
+            ws.receive()
     except Exception as e:
         print("Websocket crashed: ", e)
         pass
@@ -66,11 +94,9 @@ def socket():
 @app.route('/profile/passchange', methods=['PUT'])
 def change_password():
 
-    not_valid = has_valid_headers(request.headers)
-    if not_valid:
-        return not_valid
-
-    data = request.get_json()
+    success, data = validate_data(request)
+    if success == False:
+        return data
 
     if 'oldpassword' not in data or \
             'newpassword' not in data:
@@ -87,10 +113,10 @@ def change_password():
         return json.dumps({"success": False,
                            "data":  "Invalid password, must be of length 4 or greater"})
 
-    data['password'] = bcrypt.generate_password_hash(data['password'])
+    data['password'] = bcrypt.generate_password_hash(data['newpassword'])
 
     result = database_handler.change_password(
-        session.get_email_by_token(request.headers['token']), data)
+        session.get_email_by_token(request.headers['token']), data['password'])
 
     if result == True:
         return json.dumps({"success": True,
@@ -138,7 +164,7 @@ def sign_in():
                            "data":  "Form data missing or incorrect type."})
 
     user = database_handler.get_profile_by_email(data['email'])
-        
+
     if user == False:
         return json.dumps({"success": False,
                            "data":  "User does not exist"})
@@ -212,11 +238,10 @@ def get_profile_by_token():
 @app.route('/profile/get-by-email', methods=['POST'])
 def get_profile_by_email():
 
-    not_valid = has_valid_headers(request.headers)
-    if not_valid:
-        return not_valid
+    success, data = validate_data(request)
+    if success == False:
+        return data
 
-    data = request.get_json()
     if 'email' not in data:
         return json.dumps({
             "success": False,
@@ -254,11 +279,10 @@ def get_messages_by_token():
 @app.route('/profile/messages-by-email', methods=["POST"])
 def get_messages_by_email():
 
-    not_valid = has_valid_headers(request.headers)
-    if not_valid:
-        return not_valid
+    success, data = validate_data(request)
+    if success == False:
+        return data
 
-    data = request.get_json()
     if 'email' not in data:
         return json.dumps({
             "success": False,
@@ -277,11 +301,10 @@ def get_messages_by_email():
 @app.route('/profile/post', methods=['PUT'])
 def post_message_by_email():
 
-    not_valid = has_valid_headers(request.headers)
-    if not_valid:
-        return not_valid
+    success, data = validate_data(request)
+    if success == False:
+        return data
 
-    data = request.get_json()
     if 'email' not in data or \
             'content' not in data:
         return json.dumps({"success": False,
@@ -305,5 +328,6 @@ def root():
 
 
 if __name__ == '__main__':
-    server = WSGIServer(('127.0.0.1', 5000), app, handler_class=WebSocketHandler)
+    server = WSGIServer(('127.0.0.1', 5000), app,
+                        handler_class=WebSocketHandler)
     server.serve_forever()

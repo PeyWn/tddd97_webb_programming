@@ -7,7 +7,7 @@
  *  the description of how it works is in the lab instructions.
  **/
 
-// function this.transmission(data) {
+// function transmission(data) {
 //   const email = window.sessionStorage.getItem("email");
 //   const hmac = hmacSHA512(JSON.stringify(data), email);
 //   data.push({
@@ -20,26 +20,27 @@
 
 // var communication = (function() {
 //   var communication = {
+function transmission(data) {
+  const email = window.sessionStorage.getItem("email");
+  const str   = JSON.stringify(data)
+
+  const msg = CryptoJS.enc.Utf8.parse(str)
+  const secret_key = CryptoJS.enc.Utf8.parse(email)
+
+  const hmac = CryptoJS.HmacSHA512(msg, secret_key);
+  data["hmac"] = CryptoJS.enc.Hex.stringify(hmac);
+  return JSON.stringify(data);
+}
+
 class Communication {
   constructor() {}
-  transmission(data) {
-    const email = window.sessionStorage.getItem("email");
-    // const hmac = CryptoJS.HmacSHA512(JSON.stringify(data), email);
-    const hmac = CryptoJS.HmacSHA512("Hej", "woop");
-
-    data.push({
-      key: "hmac",
-      value: hmac
-    });
-    return JSON.stringify(data);
-  }
 
   getRequestPromise(url = "/wrong", head = [], body = "", method = "PUT") {
     if (method !== "POST" && method !== "PUT" && method !== "GET") {
       return { success: false, body: `${method} in not a valid method` };
     }
 
-    xhttp = new XMLHttpRequest();
+    let xhttp = new XMLHttpRequest();
 
     xhttp.open(method, url, true);
     xhttp.setRequestHeader("Content-Type", "application/JSON");
@@ -75,7 +76,7 @@ class Communication {
     return this.getRequestPromise(
       "/profile/post",
       [["Token", token]],
-      this.transmission({
+      transmission({
         content: sendContent,
         email: toEmail
       }),
@@ -87,7 +88,7 @@ class Communication {
     return this.getRequestPromise(
       "/profile/get-by-token",
       [["Token", token]],
-      this.transmission({}),
+      transmission({}),
       "GET"
     );
   }
@@ -96,7 +97,7 @@ class Communication {
     return this.getRequestPromise(
       "/profile/get-by-email",
       [["Token", token]],
-      this.transmission({
+      transmission({
         email: userEmail
       }),
       "POST"
@@ -107,7 +108,7 @@ class Communication {
     return this.getRequestPromise(
       "/profile/messages-by-token",
       [["Token", token]],
-      this.transmission({}),
+      transmission({}),
       "GET"
     );
   }
@@ -116,7 +117,7 @@ class Communication {
     return this.getRequestPromise(
       "/profile/messages-by-email",
       [["Token", token]],
-      this.transmission({
+      transmission({
         email: fromEmail
       }),
       "POST"
@@ -136,7 +137,7 @@ class Communication {
     return this.getRequestPromise(
       "/user/signin",
       [[]],
-      this.transmission({
+      transmission({
         email: email,
         password: password
       }),
@@ -158,7 +159,7 @@ class Communication {
     return this.getRequestPromise(
       "/user/signup",
       [[]],
-      this.transmission(inputObject),
+      transmission(inputObject),
       "PUT"
     );
   }
@@ -167,7 +168,7 @@ class Communication {
     return this.getRequestPromise(
       "/profile/passchange",
       [["Token", token]],
-      this.transmission({
+      transmission({
         oldpassword: oldPassword,
         newpassword: newPassword
       }),
