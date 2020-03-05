@@ -36,11 +36,11 @@ def validate_password(password):
 
 
 def has_valid_headers(headers):
-    if not 'Token' in headers or \
-            not session.has_valid_token(headers['Token']):
+    if not 'Email' in headers or \
+            not session.has_valid_email(headers['Email']):
         return json.dumps({
             "success": False,
-            "data": "No valid token in request"
+            "data": "No valid Email in request"
         })
     return
 
@@ -51,13 +51,15 @@ def validate_data(request):
         return False, not_valid
 
     data = request.get_json()
-    email = session.get_email_by_token(request.headers['Token'])
+    email = request.headers['Email']
+    key = session.get_token_by_email(email)
 
     orig_hmac = data['hmac']
     del data['hmac']
 
-    signature = json.dumps(data).replace(" ", "").encode('utf-8')
-    secret_key = email.encode('utf-8')
+    signature = json.dumps(data).replace('": ', '":')
+    signature = signature.replace(', \"', ',"').encode('utf-8')    
+    secret_key = key.encode('utf-8')
 
     local_hmac = hmac.new(secret_key, signature, "sha512").hexdigest()
     
@@ -80,8 +82,8 @@ def socket():
         msg = ws.receive()
         data = json.loads(msg)
 
-        if 'Token' in data:
-            session.add_connection(data['Token'], ws)
+        if 'Email' in data:
+            session.add_connection(data['Email'], ws)
 
         while True:
             ws.receive()
@@ -103,7 +105,7 @@ def change_password():
         return json.dumps({"success": False,
                            "data":  "Form data missing or incorrect type."})
 
-    email = session.get_email_by_token(request.headers['token'])
+    email = request.headers['Email']
 
     if validate_signin(email, data['oldpassword']) == False:
         return json.dumps({"success": False,
@@ -116,7 +118,7 @@ def change_password():
     data['password'] = bcrypt.generate_password_hash(data['newpassword'])
 
     result = database_handler.change_password(
-        session.get_email_by_token(request.headers['token']), data['password'])
+        request.headers['Email'], data['password'])
 
     if result == True:
         return json.dumps({"success": True,
@@ -132,7 +134,7 @@ def valid_session():
     if not_valid:
         return not_valid
 
-    email = session.get_email_by_token(request.headers['Token'])
+    email = request.headers['Email']
 
     if not session.has_valid_session(email):
         return json.dumps({"success": False,
@@ -149,7 +151,7 @@ def sign_out():
     if not_valid:
         return not_valid
 
-    session.end_session(request.headers['Token'])
+    session.end_session(request.headers['Email'])
     return json.dumps({"success": True,
                        "data":  "Successfully signed out."})
 
@@ -220,7 +222,7 @@ def get_profile_by_token():
     if not_valid:
         return not_valid
 
-    email = session.get_email_by_token(request.headers['Token'])
+    email = request.headers['Email']
 
     profile = database_handler.get_profile_by_email(email)
 
@@ -266,7 +268,7 @@ def get_messages_by_token():
     if not_valid:
         return not_valid
 
-    email = session.get_email_by_token(request.headers['Token'])
+    email = request.headers['Email']
     data = database_handler.get_messages_by_email(email)
 
     if data == False:
@@ -310,10 +312,10 @@ def post_message_by_email():
         return json.dumps({"success": False,
                            "data":  "Form data missing or incorrect type."})
 
-    if not session.has_valid_token(request.headers['token']):
+    if not session.has_valid_email(request.headers['Email']):
         return json.dumps({"success": False, "data":  "You are not signed in."})
 
-    writer = session.get_email_by_token(request.headers['Token'])
+    writer = request.headers['Email']
     result = database_handler.add_message_by_email(
         data['email'], data['content'], writer)
     if result == True:

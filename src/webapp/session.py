@@ -12,8 +12,7 @@ class Session:
     def get_token_by_email(self, email):
         return self.__logged_in_users[email]['token']
 
-    def get_connection_by_token(self, token):
-        email = self.get_email_by_token(token)
+    def get_connection_by_email(self, email):
         return self.__logged_in_users[email]['socket']
 
     def generate_token(self):
@@ -27,19 +26,16 @@ class Session:
 
     def has_valid_session(self, email):
         if email in self.__logged_in_users.keys():
-            token = self.get_token_by_email(email)
-            if token != None and self.has_valid_token(token):
+            if self.has_valid_email(email):
                 return True
         return False
 
-    def has_valid_token(self, token):
-        for item in self.__logged_in_users.values():
-            if token == item['token']:
-                return True
+    def has_valid_email(self, email):
+        if email in self.__logged_in_users:
+            return True
         return False
 
-    def add_connection(self, token, socket):
-        email = self.get_email_by_token(token)
+    def add_connection(self, email, socket):
         self.__logged_in_users[email]['socket'] = socket
 
     def create_session(self, email):
@@ -53,9 +49,8 @@ class Session:
             return token
         return None
 
-    def end_session(self, token):
-        if self.has_valid_token(token):
-            email = self.get_email_by_token(token)
+    def end_session(self, email):
+        if self.has_valid_email(email):
             if (email != None):
                 del self.__logged_in_users[email]
             return True

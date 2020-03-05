@@ -64,7 +64,6 @@ def make_dictionary_profile(data_list):
 
 
 def get_profile_by_email(email):
-    print('Email type ', email, ': ', type(email))
     try:
         cursor = get_db().execute(
             'SELECT * FROM profile WHERE email LIKE ?', [email])

@@ -440,7 +440,7 @@ async function loadProfileInfo() {
   if (infoElem === false) return;
   const token = window.sessionStorage.getItem("token");
   if (token === null || typeof token === "undefined") return;
-  const response = await communication.getUserDataByToken(token);
+  const response = await communication.getUserDataByEmail(token);
   let success = response.success;
   let data = response.data;
   if (success) {
@@ -458,7 +458,7 @@ async function loadProfileInfo() {
 async function getCurrentUserMessages() {
   const token = getSessionItem("token");
   if (token === false) return false;
-  const response = await communication.getUserMessagesByToken(token);
+  const response = await communication.getUserMessagesByEmail(token);
   return response.success ? response.data : false;
 }
 
@@ -490,7 +490,7 @@ async function postToFeed(event, msgId, userEmail = false) {
 
   let response;
   if (userEmail === false) {
-    response = await communication.getUserDataByToken(token);
+    response = await communication.getUserDataByEmail(token);
   } else {
     response = await communication.getUserDataByEmail(token, userEmail);
   }

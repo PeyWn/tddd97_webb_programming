@@ -7,25 +7,11 @@
  *  the description of how it works is in the lab instructions.
  **/
 
-// function transmission(data) {
-//   const email = window.sessionStorage.getItem("email");
-//   const hmac = hmacSHA512(JSON.stringify(data), email);
-//   data.push({
-//     key: "hmac",
-//     value: hmac
-//   });
-//   return JSON.stringify(data);
-// }
-// import hmacSHA512 from "crypto-js/hmac-sha512";
+function transmission(data, token) {
+  const str = JSON.stringify(data);
 
-// var communication = (function() {
-//   var communication = {
-function transmission(data) {
-  const email = window.sessionStorage.getItem("email");
-  const str   = JSON.stringify(data)
-
-  const msg = CryptoJS.enc.Utf8.parse(str)
-  const secret_key = CryptoJS.enc.Utf8.parse(email)
+  const msg = CryptoJS.enc.Utf8.parse(str);
+  const secret_key = CryptoJS.enc.Utf8.parse(token);
 
   const hmac = CryptoJS.HmacSHA512(msg, secret_key);
   data["hmac"] = CryptoJS.enc.Hex.stringify(hmac);
@@ -72,62 +58,71 @@ class Communication {
     });
   }
 
-  postMessage(token, sendContent, toEmail) {
+  postMessage(token, sendContent, toEmail = null) {
+    const email = window.sessionStorage.getItem("email");
+    if (toEmail === null) toEmail = email
     return this.getRequestPromise(
       "/profile/post",
-      [["Token", token]],
+      [["Email", email]],
       transmission({
         content: sendContent,
         email: toEmail
-      }),
+      }, token),
       "PUT"
     );
   }
 
   getUserDataByToken(token) {
+    const email = window.sessionStorage.getItem("email");
     return this.getRequestPromise(
       "/profile/get-by-token",
-      [["Token", token]],
-      transmission({}),
+      [["Email", email]],
+      transmission({}, token),
       "GET"
     );
   }
 
-  getUserDataByEmail(token, userEmail) {
+  getUserDataByEmail(token, userEmail = null) {
+    const email = window.sessionStorage.getItem("email");
+    if (userEmail === null) userEmail = email
     return this.getRequestPromise(
       "/profile/get-by-email",
-      [["Token", token]],
+      [["Email", email]],
       transmission({
         email: userEmail
-      }),
+      }, token),
       "POST"
     );
   }
 
   getUserMessagesByToken(token) {
+    const email = window.sessionStorage.getItem("email");
     return this.getRequestPromise(
       "/profile/messages-by-token",
-      [["Token", token]],
-      transmission({}),
+      [["Email", email]],
+      transmission({}, token),
       "GET"
     );
   }
 
-  getUserMessagesByEmail(token, fromEmail) {
+  getUserMessagesByEmail(token, fromEmail = null) {
+    const email = window.sessionStorage.getItem("email");
+    if (fromEmail === null) fromEmail = email
     return this.getRequestPromise(
       "/profile/messages-by-email",
-      [["Token", token]],
+      [["Email", email]],
       transmission({
         email: fromEmail
-      }),
+      }, token),
       "POST"
     );
   }
 
   hasValidSession(token) {
+    const email = window.sessionStorage.getItem("email");
     return this.getRequestPromise(
       "/user/valid-session",
-      [["Token", token]],
+      [["Email", email]],
       "",
       "GET"
     );
@@ -140,15 +135,16 @@ class Communication {
       transmission({
         email: email,
         password: password
-      }),
+      }, "secrets"),
       "POST"
     );
   }
 
   signOut(token) {
+    const email = window.sessionStorage.getItem("email");
     return this.getRequestPromise(
       "/user/signout",
-      [["Token", token]],
+      [["Email", email]],
       "",
       "PUT"
     );
@@ -165,13 +161,14 @@ class Communication {
   }
 
   changePassword(token, oldPassword, newPassword) {
+    const email = window.sessionStorage.getItem("email");
     return this.getRequestPromise(
       "/profile/passchange",
-      [["Token", token]],
+      [["Email", email]],
       transmission({
         oldpassword: oldPassword,
         newpassword: newPassword
-      }),
+      }, token),
       "PUT"
     );
   }
