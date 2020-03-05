@@ -8,9 +8,9 @@
  **/
 
 function transmission(data, token) {
-  let str = ``
+  let str = ``;
   for (let key in data) {
-    str += `${key}${data[key]}`
+    str += `${key}${data[key]}`;
   }
   const msg = CryptoJS.enc.Utf8.parse(str);
   const secret_key = CryptoJS.enc.Utf8.parse(token);
@@ -62,14 +62,14 @@ class Communication {
 
   postMessage(token, sendContent, toEmail = null) {
     const email = window.sessionStorage.getItem("email");
-    if (toEmail === null) toEmail = email
+    if (toEmail === null) toEmail = email;
     return this.getRequestPromise(
       "/profile/post",
       [["Email", email]],
-      transmission({
+      JSON.stringify({
         content: sendContent,
         email: toEmail
-      }, token),
+      }),
       "PUT"
     );
   }
@@ -86,13 +86,16 @@ class Communication {
 
   getUserDataByEmail(token, userEmail = null) {
     const email = window.sessionStorage.getItem("email");
-    if (userEmail === null) userEmail = email
+    if (userEmail === null) userEmail = email;
     return this.getRequestPromise(
       "/profile/get-by-email",
       [["Email", email]],
-      transmission({
-        email: userEmail
-      }, token),
+      transmission(
+        {
+          email: userEmail
+        },
+        token
+      ),
       "POST"
     );
   }
@@ -109,13 +112,16 @@ class Communication {
 
   getUserMessagesByEmail(token, fromEmail = null) {
     const email = window.sessionStorage.getItem("email");
-    if (fromEmail === null) fromEmail = email
+    if (fromEmail === null) fromEmail = email;
     return this.getRequestPromise(
       "/profile/messages-by-email",
       [["Email", email]],
-      transmission({
-        email: fromEmail
-      }, token),
+      transmission(
+        {
+          email: fromEmail
+        },
+        token
+      ),
       "POST"
     );
   }
@@ -134,10 +140,13 @@ class Communication {
     return this.getRequestPromise(
       "/user/signin",
       [[]],
-      transmission({
-        email: email,
-        password: password
-      }, "secrets"),
+      transmission(
+        {
+          email: email,
+          password: password
+        },
+        "secrets"
+      ),
       "POST"
     );
   }
@@ -167,10 +176,13 @@ class Communication {
     return this.getRequestPromise(
       "/profile/passchange",
       [["Email", email]],
-      transmission({
-        oldpassword: oldPassword,
-        newpassword: newPassword
-      }, token),
+      transmission(
+        {
+          oldpassword: oldPassword,
+          newpassword: newPassword
+        },
+        token
+      ),
       "PUT"
     );
   }

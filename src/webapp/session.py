@@ -36,18 +36,19 @@ class Session:
         return False
 
     def add_connection(self, email, socket):
-        self.__logged_in_users[email]['socket'] = socket
+        self.__logged_in_users[email].update({'socket': socket})
 
     def create_session(self, email):
-        if email:
-            if email in self.__logged_in_users and \
-                    'socket' in self.__logged_in_users[email]:
-                self.__logged_in_users[email]['socket'].close()
+        if \
+            email in self.__logged_in_users and \
+            'socket' in self.__logged_in_users[email]:
+            print("Kill active session: ", email)
+            self.__logged_in_users[email]['socket'].close()
+            del self.__logged_in_users[email]['socket']
 
-            token = self.generate_token()
-            self.__logged_in_users[email] = {'token': token}
-            return token
-        return None
+        token = self.generate_token()
+        self.__logged_in_users.update({email: {'token': token}})
+        return token
 
     def end_session(self, email):
         if self.has_valid_email(email):
@@ -55,6 +56,6 @@ class Session:
                 del self.__logged_in_users[email]
             return True
         return False
-        
+
 def new_session():
     return Session()

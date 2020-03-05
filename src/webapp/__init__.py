@@ -65,7 +65,7 @@ def validate_data(request):
     secret_key = key.encode('utf-8')
 
     local_hmac = hmac.new(secret_key, signature, "sha512").hexdigest()
-    
+
     if hmac.compare_digest(local_hmac, orig_hmac):
         return True, data
 

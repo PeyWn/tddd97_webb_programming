@@ -99,8 +99,8 @@ function session() {
   if ("WebSocket" in window) {
     const port = "5000";
     const route = "/api/session";
-    const email = window.sessionStorage.getItem("email");
-    
+    const email = getSessionItem("email");
+
     ws = new WebSocket(`ws://${document.domain}:${port}${route}`);
 
     ws.onopen = function() {
@@ -110,7 +110,7 @@ function session() {
       ws.send(msg);
     };
     ws.onclose = function() {
-      console.log('Signing-out')
+      console.log("Signing-out");
       signOut();
     };
   } else {
@@ -222,7 +222,7 @@ async function validateLogin(event) {
     writeToElement(_msg, msgId);
     return;
   }
-  
+
   window.sessionStorage.setItem("email", fields.username.value);
 
   const response = await communication.signIn(
@@ -234,7 +234,7 @@ async function validateLogin(event) {
   if (response.success === true && "data" in response) {
     window.sessionStorage.setItem("token", response.data);
 
-    session();
+    this.session();
 
     _msg = `Successfully logged in`;
 
