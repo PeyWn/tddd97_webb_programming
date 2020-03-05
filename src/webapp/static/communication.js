@@ -8,8 +8,10 @@
  **/
 
 function transmission(data, token) {
-  const str = JSON.stringify(data);
-
+  let str = ``
+  for (let key in data) {
+    str += `${key}${data[key]}`
+  }
   const msg = CryptoJS.enc.Utf8.parse(str);
   const secret_key = CryptoJS.enc.Utf8.parse(token);
 
@@ -118,7 +120,7 @@ class Communication {
     );
   }
 
-  hasValidSession(token) {
+  hasValidSession() {
     const email = window.sessionStorage.getItem("email");
     return this.getRequestPromise(
       "/user/valid-session",
@@ -140,7 +142,7 @@ class Communication {
     );
   }
 
-  signOut(token) {
+  signOut() {
     const email = window.sessionStorage.getItem("email");
     return this.getRequestPromise(
       "/user/signout",

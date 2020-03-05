@@ -51,14 +51,17 @@ def validate_data(request):
         return False, not_valid
 
     data = request.get_json()
-    email = request.headers['Email']
-    key = session.get_token_by_email(email)
-
     orig_hmac = data['hmac']
     del data['hmac']
 
-    signature = json.dumps(data).replace('": ', '":')
-    signature = signature.replace(', \"', ',"').encode('utf-8')    
+    msg = ""
+    for key, val in data.items():
+        msg += key + val
+
+    email = request.headers['Email']
+    key = session.get_token_by_email(email)
+
+    signature = msg.encode('utf-8')
     secret_key = key.encode('utf-8')
 
     local_hmac = hmac.new(secret_key, signature, "sha512").hexdigest()

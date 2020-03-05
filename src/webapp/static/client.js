@@ -94,24 +94,27 @@ async function genKeys() {
 
 /* ======= General Helpers ======= */
 
-function session(token) {
+function session() {
   // TODO refresh
   if ("WebSocket" in window) {
     const port = "5000";
     const route = "/api/session";
+    const email = window.sessionStorage.getItem("email");
+    
     ws = new WebSocket(`ws://${document.domain}:${port}${route}`);
 
     ws.onopen = function() {
       const msg = JSON.stringify({
-        Token: token
+        Email: email
       });
       ws.send(msg);
     };
     ws.onclose = function() {
+      console.log('Signing-out')
       signOut();
     };
   } else {
-    console.warn("WebSocket not supported");
+    console.warn("Web not supported");
   }
   return;
 }
@@ -157,10 +160,10 @@ function getSessionItem(id) {
 /**
  * Checks if the current session has a valid token
  */
-async function hasValidToken() {
-  const token = getSessionItem("token");
-  if (token === false) return false;
-  const response = await communication.hasValidSession(token);
+async function hasValidSession() {
+  const email = getSessionItem("email");
+  if (email === false) return false;
+  const response = await communication.hasValidSession(email);
   if (!("success" in response)) return false;
   return response.success;
 }
@@ -231,7 +234,7 @@ async function validateLogin(event) {
   if (response.success === true && "data" in response) {
     window.sessionStorage.setItem("token", response.data);
 
-    session(response.data);
+    session();
 
     _msg = `Successfully logged in`;
 
@@ -334,7 +337,7 @@ async function signOut(event) {
     console.warn("Token not found when signing out");
     return;
   }
-  await communication.signOut(token);
+  await communication.signOut();
   flushPage();
   window.sessionStorage.setItem("token", null);
   changeView("login");
@@ -609,10 +612,9 @@ displayView = function() {
 };
 
 window.onload = async function() {
-  let isValid = await this.hasValidToken();
+  let isValid = await this.hasValidSession();
   if (isValid) {
-    const token = getSessionItem("token");
-    this.session(token);
+    this.session();
     this.renderPage();
   } else {
     this.signOut();
