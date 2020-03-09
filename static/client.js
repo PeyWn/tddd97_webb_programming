@@ -97,7 +97,7 @@ async function genKeys() {
 function session() {
   // TODO refresh
   if ("WebSocket" in window) {
-    const port = "5000";
+    const port = "8000";
     const route = "/api/session";
     const email = getSessionItem("email");
 
@@ -111,7 +111,7 @@ function session() {
     };
     ws.onclose = function() {
       console.log("Signing-out");
-      signOut();
+      //signOut();
     };
   } else {
     console.warn("Web not supported");

@@ -333,6 +333,6 @@ def root():
 
 
 if __name__ == '__main__':
-    server = WSGIServer(('127.0.0.1', 5000), app,
+    server = WSGIServer(('127.0.0.1', 8000), app,
                         handler_class=WebSocketHandler)
     server.serve_forever()
