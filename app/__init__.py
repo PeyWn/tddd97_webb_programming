@@ -11,8 +11,8 @@ import hashlib
 import base64
 import hmac
 
-import database_handler
-from session import new_session
+import app.database_handler
+from app.session import new_session
 
 app = Flask(__name__)
 bcrypt = Bcrypt(app)
