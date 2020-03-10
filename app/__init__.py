@@ -36,11 +36,15 @@ def validate_password(password):
 
 
 def has_valid_headers(headers):
-    if not 'Email' in headers or \
-            not session.has_valid_email(headers['Email']):
+    if not 'Email' in headers:
         return json.dumps({
             "success": False,
             "data": "No valid Email in request"
+        })
+    if not session.has_valid_email(headers['Email']):
+        return json.dumps({
+            "success": False,
+            "data": "No valid session for: " + headers['Email']
         })
     return
 
