@@ -100,8 +100,12 @@ function session() {
     const port = "5000";
     const route = "/api/session";
     const email = getSessionItem("email");
+    let wsProc = "ws";
+    if (location.protocol !== "https:") {
+      wsProc = "wss";
+    }
 
-    ws = new WebSocket(`ws://${document.domain}:${port}${route}`);
+    ws = new WebSocket(`${wsProc}://${document.domain}:${port}${route}`);
 
     ws.onopen = function() {
       const msg = JSON.stringify({
