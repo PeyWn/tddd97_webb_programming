@@ -35,7 +35,7 @@ async function renderUserMessages(email = false) {
 /**
  *  Renders all pages on login, fetching data from backend
  */
-function renderPage() {
+async function renderPage() {
   for (view in views) {
     let bodyElem = getElement(views[view].body);
     const headElem = getElement(views[view].head);
