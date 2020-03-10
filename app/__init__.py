@@ -4,9 +4,6 @@ import json
 from flask import Flask, request
 from flask_bcrypt import Bcrypt
 
-from geventwebsocket.handler import WebSocketHandler
-from gevent.pywsgi import WSGIServer
-
 import hashlib
 import base64
 import hmac
