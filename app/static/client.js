@@ -95,7 +95,7 @@ async function genKeys() {
 /* ======= General Helpers ======= */
 
 function session() {
-  // TODO refresh
+  return;
   if ("WebSocket" in window) {
     const port = "5000";
     const route = "/api/session";
