@@ -68,7 +68,8 @@ class Communication {
       [["Email", email]],
       JSON.stringify({
         content: sendContent,
-        email: toEmail
+        email: toEmail,
+        hmac: ""
       }),
       "PUT"
     );
