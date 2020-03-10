@@ -66,11 +66,13 @@ class Communication {
     return this.getRequestPromise(
       "/profile/post",
       [["Email", email]],
-      JSON.stringify({
-        content: sendContent,
-        email: toEmail,
-        hmac: ""
-      }),
+      transmission(
+        {
+          content: sendContent,
+          email: toEmail
+        },
+        token
+      ),
       "PUT"
     );
   }
