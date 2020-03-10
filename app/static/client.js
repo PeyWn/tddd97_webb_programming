@@ -95,7 +95,6 @@ async function genKeys() {
 /* ======= General Helpers ======= */
 
 function session() {
-  return;
   if ("WebSocket" in window) {
     const port = "5000";
     const route = "/api/session";
@@ -613,14 +612,12 @@ displayView = function() {
 };
 
 window.onload = async function() {
-  // let isValid = await this.hasValidSession();
-  // if (isValid) {
-  //   this.session();
-  //   this.renderPage();
-  // } else {
-  //   this.signOut();
-  // }
-  this.flushPage();
-  this.renderPage();
+  let isValid = await this.hasValidSession();
+  if (isValid) {
+    this.session();
+    this.renderPage();
+  } else {
+    this.signOut();
+  }
   this.displayView();
 };

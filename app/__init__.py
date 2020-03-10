@@ -3,9 +3,8 @@ import json
 
 from flask import Flask, request
 from flask_bcrypt import Bcrypt
+from flask_sockets import Sockets
 
-# from geventwebsocket.handler import WebSocketHandler
-# from gevent.pywsgi import WSGIServer
 
 import hashlib
 import base64
@@ -16,6 +15,7 @@ from app.session import new_session
 
 app = Flask(__name__)
 bcrypt = Bcrypt(app)
+sockets = Sockets(app)
 
 
 global session
@@ -75,13 +75,14 @@ def validate_data(request):
     })
 
 
-@app.route('/api/session')
-def socket():
-    if not request.environ.get('wsgi.websocket'):
-        print('No request environ get socket')
-        return ''
+#@app.route('/api/session')
+@sockets.route('/api/session')
+def socket(ws):
+    # if not request.environ.get('wsgi.websocket'):
+    #     print('No request environ get socket')
+    #     return ''
     try:
-        ws = request.environ['wsgi.websocket']
+        # ws = request.environ['wsgi.websocket']
         msg = ws.receive()
         data = json.loads(msg)
 
@@ -333,7 +334,12 @@ def root():
 
 
 if __name__ == '__main__':
-    app.run()
+    from geventwebsocket.handler import WebSocketHandler
+    from gevent.pywsgi import WSGIServer
+    server = WSGIServer(('', 5000), app,
+                        handler_class=WebSocketHandler)
+    server.serve_forever()
+
 # if __name__ == '__main__':
 #    server = WSGIServer(('127.0.0.1', 5000), app,
 #                        handler_class=WebSocketHandler)
