@@ -39,6 +39,7 @@ class Session:
         self.__logged_in_users[email].update({'socket': socket})
 
     def create_session(self, email):
+        print(self.__logged_in_users)
         if \
             email in self.__logged_in_users and \
             'socket' in self.__logged_in_users[email]:
