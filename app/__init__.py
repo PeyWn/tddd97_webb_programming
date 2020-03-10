@@ -332,6 +332,8 @@ def root():
     return app.send_static_file('client.html')
 
 
+if __name__ == '__main__':
+    app.run()
 # if __name__ == '__main__':
 #    server = WSGIServer(('127.0.0.1', 5000), app,
 #                        handler_class=WebSocketHandler)
