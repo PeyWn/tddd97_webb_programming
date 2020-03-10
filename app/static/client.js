@@ -613,12 +613,14 @@ displayView = function() {
 };
 
 window.onload = async function() {
-  let isValid = await this.hasValidSession();
-  if (isValid) {
-    this.session();
-    this.renderPage();
-  } else {
-    this.signOut();
-  }
+  // let isValid = await this.hasValidSession();
+  // if (isValid) {
+  //   this.session();
+  //   this.renderPage();
+  // } else {
+  //   this.signOut();
+  // }
+  this.session();
+  this.renderPage();
   this.displayView();
 };
