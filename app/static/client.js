@@ -620,7 +620,7 @@ window.onload = async function() {
   // } else {
   //   this.signOut();
   // }
-  this.session();
+  this.flushPage();
   this.renderPage();
   this.displayView();
 };
